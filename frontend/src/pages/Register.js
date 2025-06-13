@@ -1,85 +1,152 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { 
+  Container,
+  Box,
+  Avatar,
+  Typography,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
+  CircularProgress,
+  Link
+} from '@mui/material';
+import { HowToReg as RegisterIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('employee');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    role: 'employee'
+  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
-        email,
-        password,
-        role
-      });
+    setLoading(true);
+    setError('');
 
-      // Guardar token y redirigir
-      localStorage.setItem('token', response.data.token);
-      navigate(response.data.role === 'admin' ? '/admin' : '/employee');
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/register', formData);
       
+      if (response.data.token) {
+        setSuccess(true);
+        setTimeout(() => navigate('/login'), 2000); // Redirige después de 2 segundos
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al registrar');
+      setError(err.response?.data?.message || 'Error al registrar usuario');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6">Registro</h2>
-        
-        {error && <div className="mb-4 text-red-500">{error}</div>}
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          bgcolor: 'background.paper',
+          p: 4,
+          borderRadius: 2,
+          boxShadow: 3
+        }}
+      >
+        <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+          <RegisterIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          Crear Cuenta
+        </Typography>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border rounded"
+        {success && (
+          <Alert severity="success" sx={{ width: '100%', mt: 2 }}>
+            ¡Registro exitoso! Redirigiendo...
+          </Alert>
+        )}
+
+        {error && (
+          <Alert severity="error" sx={{ width: '100%', mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={formData.email}
+            onChange={handleChange}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Contraseña"
+            type="password"
+            id="password"
+            autoComplete="new-password"
+            value={formData.password}
+            onChange={handleChange}
+            inputProps={{ minLength: 6 }}
+            disabled={loading}
+          />
+          <FormControl fullWidth margin="normal" disabled={loading}>
+            <InputLabel id="role-label">Rol *</InputLabel>
+            <Select
+              labelId="role-label"
+              id="role"
+              name="role"
+              value={formData.role}
+              label="Rol"
+              onChange={handleChange}
               required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-1">Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 border rounded"
-              minLength="6"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-1">Rol</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full p-2 border rounded"
             >
-              <option value="employee">Empleado</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </div>
-
-          <button
+              <MenuItem value="employee">Empleado</MenuItem>
+              <MenuItem value="admin">Administrador</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
             type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : null}
           >
-            Registrarse
-          </button>
-        </form>
-      </div>
-    </div>
+            {loading ? 'Registrando...' : 'Registrarse'}
+          </Button>
+          <Box textAlign="center">
+            <Link href="/login" variant="body2">
+              ¿Ya tienes cuenta? Inicia Sesión
+            </Link>
+          </Box>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

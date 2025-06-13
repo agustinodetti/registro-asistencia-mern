@@ -1,17 +1,22 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
+import { createRoot } from 'react-dom/client';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
+import theme from './theme'; // Asegúrate de tener este archivo
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+// Obtén el contenedor raíz
+const container = document.getElementById('root');
+
+// Crea una raíz
+const root = createRoot(container);
+
+// Renderiza la app
 root.render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <App />
+    </ThemeProvider>
   </React.StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

@@ -1,33 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import {
+  Container,
+  Box,
+  Typography,
+  Button,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Divider,
+  Chip,
+  TextField,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import { 
+  CheckCircle as CheckIcon,
+  HighlightOff as CrossIcon,
+  AccessTime as ClockIcon,
+  Notes as NotesIcon
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { ClockIcon, CheckIcon, XIcon } from '@heroicons/react/outline';
+import axios from 'axios';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const Attendance = () => {
   const [records, setRecords] = useState([]);
   const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Obtener historial al cargar el componente (GET /api/attendance/history)
-  useEffect(() => {
-    const fetchRecords = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/attendance/history', {
-          headers: { 'x-auth-token': token }
-        });
-        setRecords(res.data);
-      } catch (err) {
-        if (err.response?.status === 401) navigate('/login');
-        setError('Error al cargar historial');
-      }
-    };
-    fetchRecords();
-  }, []);
+  // Obtener historial de asistencia
+  const fetchRecords = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/attendance/history', {
+        headers: { 'x-auth-token': token }
+      });
+      setRecords(res.data);
+    } catch (err) {
+      if (err.response?.status === 401) navigate('/login');
+      setError('Error al cargar historial');
+    }
+  };
 
-  // Registrar ingreso/egreso (POST /api/attendance/register)
+  // Registrar asistencia
   const handleAttendance = async (type) => {
+    setLoading(true);
+    setError('');
+    
     try {
       const token = localStorage.getItem('token');
       const res = await axios.post(
@@ -36,91 +60,128 @@ const Attendance = () => {
         { headers: { 'x-auth-token': token } }
       );
       
-      // Actualizar el estado local con el nuevo registro
-      setRecords([res.data, ...records.slice(0, 4)]); // Actualiza el historial
-      setNotes(''); // Limpia el campo de notas
+      setRecords([res.data, ...records.slice(0, 4)]);
+      setNotes('');
       setError('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al registrar');
+      setError(err.response?.data?.message || 'Error al registrar asistencia');
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Cargar registros al inicio
+  useEffect(() => {
+    fetchRecords();
+  }, []);
+
   // Formatear fecha
-  const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatDate = (date) => {
+    return format(new Date(date), "PPPpp", { locale: es });
   };
 
   return (
-    <div className="min-h-screen p-6 bg-gray-50">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-xl font-bold mb-4 flex items-center">
-          <ClockIcon className="h-5 w-5 mr-2" />
-          Registro de Asistencia
-        </h1>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+        Registro de Asistencia
+      </Typography>
 
-        {error && (
-          <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm">
-            {error}
-          </div>
-        )}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
-        {/* Botones de acción */}
-        <div className="flex space-x-4 mb-6">
-          <button
-            onClick={() => handleAttendance('in')}
-            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 flex items-center justify-center"
-          >
-            <CheckIcon className="h-5 w-5 mr-1" />
-            Ingresé
-          </button>
-          <button
-            onClick={() => handleAttendance('out')}
-            className="flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 flex items-center justify-center"
-          >
-            <XIcon className="h-5 w-5 mr-1" />
-            Salí
-          </button>
-        </div>
+      <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+        <Button
+          variant="contained"
+          color="success"
+          size="large"
+          startIcon={<CheckIcon />}
+          onClick={() => handleAttendance('in')}
+          disabled={loading}
+          sx={{ flex: 1, py: 2 }}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Registrar Ingreso'}
+        </Button>
 
-        {/* Campo de notas */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Notas (opcional)
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            rows="2"
-            placeholder="Ej: 'Salí por reunión externa'"
-          />
-        </div>
+        <Button
+          variant="contained"
+          color="error"
+          size="large"
+          startIcon={<CrossIcon />}
+          onClick={() => handleAttendance('out')}
+          disabled={loading}
+          sx={{ flex: 1, py: 2 }}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Registrar Salida'}
+        </Button>
+      </Box>
 
-        {/* Historial */}
-        <div>
-          <h2 className="font-semibold mb-2">Últimos registros:</h2>
-          <ul className="space-y-2">
-            {records.map((record) => (
-              <li key={record._id} className="border-b pb-2">
-                <p className="font-medium">
-                  {record.type === 'in' ? '🟢 Ingreso' : '🔴 Egreso'}
-                </p>
-                <p className="text-sm text-gray-600">{formatDate(record.timestamp)}</p>
-                {record.notes && <p className="text-sm mt-1">📝 {record.notes}</p>}
-              </li>
+      <TextField
+        fullWidth
+        label="Notas (opcional)"
+        variant="outlined"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        margin="normal"
+        multiline
+        rows={2}
+        InputProps={{
+          startAdornment: <NotesIcon color="action" sx={{ mr: 1 }} />
+        }}
+      />
+
+      <Paper elevation={3} sx={{ mt: 4, p: 2 }}>
+        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+          Historial Reciente
+        </Typography>
+        
+        {records.length === 0 ? (
+          <Typography variant="body1" color="textSecondary" sx={{ py: 2 }}>
+            No hay registros de asistencia
+          </Typography>
+        ) : (
+          <List>
+            {records.map((record, index) => (
+              <React.Fragment key={record._id}>
+                <ListItem>
+                  <ListItemIcon>
+                    {record.type === 'in' ? (
+                      <CheckIcon color="success" />
+                    ) : (
+                      <CrossIcon color="error" />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          label={record.type === 'in' ? 'INGRESO' : 'SALIDA'}
+                          color={record.type === 'in' ? 'success' : 'error'}
+                          size="small"
+                        />
+                        <Typography variant="body1">
+                          {formatDate(record.timestamp)}
+                        </Typography>
+                      </Box>
+                    }
+                    secondary={
+                      record.notes && (
+                        <Typography variant="body2" color="textSecondary">
+                          Nota: {record.notes}
+                        </Typography>
+                      )
+                    }
+                  />
+                </ListItem>
+                {index < records.length - 1 && <Divider />}
+              </React.Fragment>
             ))}
-            {records.length === 0 && (
-              <li className="text-gray-500">No hay registros recientes</li>
-            )}
-          </ul>
-        </div>
-      </div>
-    </div>
+          </List>
+        )}
+      </Paper>
+    </Container>
   );
 };
 
