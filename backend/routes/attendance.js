@@ -19,7 +19,7 @@ router.post('/register', auth, async (req, res) => {
     }
 
     const newRecord = new Attendance({
-      userId: req.user.id,
+      user: req.user.id,
       type,
       notes
     });

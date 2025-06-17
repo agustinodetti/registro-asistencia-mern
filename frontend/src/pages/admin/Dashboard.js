@@ -52,6 +52,7 @@ const AdminDashboard = () => {
   });
   const [users, setUsers] = useState([]);
   const [attendanceStats, setAttendanceStats] = useState({});
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,6 +64,14 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchUsers();
     fetchStats();
+    const fetchAttendance = async () => {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/admin/attendance', {
+        headers: { 'x-auth-token': token }
+      });
+      setAttendanceRecords(res.data);
+    };
+    fetchAttendance();
   }, []);
 
   const fetchData = async () => {
@@ -317,6 +326,38 @@ const AdminDashboard = () => {
             </Table>
           </TableContainer>
         )}
+      </Paper>
+      {/* Tabla de registros de asistencia */}
+      <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Registros de Asistencia
+        </Typography>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Usuario</TableCell>
+                <TableCell>Tipo</TableCell>
+                <TableCell>Notas</TableCell>
+                <TableCell>Fecha</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {attendanceRecords.map((record) => (
+                <TableRow key={record._id}>
+                  <TableCell>{record.user?.email || 'Sin usuario'}</TableCell>
+                  <TableCell>{record.type}</TableCell>
+                  <TableCell>{record.notes}</TableCell>
+                  <TableCell>
+                    {record.timestamp
+                      ? new Date(record.timestamp).toLocaleString()
+                      : (record.createdAt ? new Date(record.createdAt).toLocaleString() : 'Sin fecha')}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
 
       {/* Gráficos (sección adicional) */}

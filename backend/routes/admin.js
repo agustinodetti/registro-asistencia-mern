@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { auth, isAdmin } = require('../middleware/auth');
 const User = require('../models/User'); 
+const Attendance = require('../models/Attendance'); // Agrega esta línea al inicio
+
 
 
 // GET /api/admin/users - Listar usuarios
@@ -96,6 +98,17 @@ router.delete('/users/:id', auth, isAdmin, async (req, res) => {
     res.json({ message: 'Usuario eliminado' });
   } catch (err) {
     res.status(500).json({ message: 'Error al eliminar usuario' });
+  }
+});
+
+// GET /api/admin/attendance - Listar todos los registros de asistencia
+router.get('/attendance', auth, isAdmin, async (req, res) => {
+  try {
+    const records = await Attendance.find().populate('user', 'email role');
+    res.json(records);
+  } catch (err) {
+    console.log('Error al obtener registros de asistencia:', err);
+    res.status(500).json({ message: 'Error al obtener registros de asistencia' });
   }
 });
 
