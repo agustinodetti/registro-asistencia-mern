@@ -59,7 +59,11 @@ const AdminDashboard = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
-  
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    fetchUsers();
+    fetchStats();
+  }, []);
 
   const fetchData = async () => {
     const token = localStorage.getItem('token');
@@ -95,6 +99,7 @@ const AdminDashboard = () => {
         headers: { 'x-auth-token': token }
       });
       setUsers(res.data);
+      console.log("RESPUESTA: ", res.data)
     } catch (err) {
       if (err.response?.status === 401) navigate('/login');
       setError('Error al cargar usuarios');
@@ -152,11 +157,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Cargar datos al montar el componente
-  useEffect(() => {
-    fetchUsers();
-    fetchStats();
-  }, []);
+  
 
   // Filtrar usuarios
   const filteredUsers = users.filter(user =>

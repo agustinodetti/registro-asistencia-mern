@@ -1,9 +1,17 @@
+const express = require('express');
+const router = express.Router();
+const { auth, isAdmin } = require('../middleware/auth');
+const User = require('../models/User'); 
+
+
 // GET /api/admin/users - Listar usuarios
 router.get('/users', auth, isAdmin, async (req, res) => {
   try {
     const users = await User.find({}, 'email role lastLogin createdAt');
+    console.log(users)
     res.json(users);
   } catch (err) {
+    console.log(err)
     res.status(500).json({ message: 'Error al obtener usuarios' });
   }
 });
@@ -91,3 +99,4 @@ router.delete('/users/:id', auth, isAdmin, async (req, res) => {
   }
 });
 
+module.exports = router;
