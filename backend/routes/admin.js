@@ -9,11 +9,9 @@ const Attendance = require('../models/Attendance'); // Agrega esta línea al ini
 // GET /api/admin/users - Listar usuarios
 router.get('/users', auth, isAdmin, async (req, res) => {
   try {
-    const users = await User.find({}, 'email role lastLogin createdAt');
-    console.log(users)
+    const users = await User.find({}, 'email role lastLogin createdAt firstName lastName subRole').populate('subRole');
     res.json(users);
   } catch (err) {
-    console.log(err)
     res.status(500).json({ message: 'Error al obtener usuarios' });
   }
 });
@@ -47,7 +45,7 @@ router.get('/stats', auth, isAdmin, async (req, res) => {
 
 // POST /api/admin/users - Crear usuario
 router.post('/users', auth, isAdmin, async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, password, role, firstName, lastName, subRole } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -55,13 +53,17 @@ router.post('/users', auth, isAdmin, async (req, res) => {
       return res.status(400).json({ message: 'El email ya está registrado' });
     }
 
-    const newUser = new User({ email, password, role });
+    const newUser = new User({ email, password, role, firstName, lastName, subRole });
     await newUser.save();
-    
+
+
     res.status(201).json({ 
       _id: newUser._id,
       email: newUser.email,
-      role: newUser.role
+      role: newUser.role,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      subRole: newUser.subRole
     });
   } catch (err) {
     res.status(500).json({ message: 'Error al crear usuario' });
@@ -76,6 +78,9 @@ router.put('/users/:id', auth, isAdmin, async (req, res) => {
 
     user.email = req.body.email || user.email;
     user.role = req.body.role || user.role;
+    user.firstName = req.body.firstName || user.firstName;
+    user.lastName = req.body.lastName || user.lastName;
+    user.subRole = req.body.subRole || user.subRole;
     if (req.body.password) user.password = req.body.password;
 
     await user.save();
@@ -104,10 +109,9 @@ router.delete('/users/:id', auth, isAdmin, async (req, res) => {
 // GET /api/admin/attendance - Listar todos los registros de asistencia
 router.get('/attendance', auth, isAdmin, async (req, res) => {
   try {
-    const records = await Attendance.find().populate('user', 'email role');
+    const records = await Attendance.find().populate('user', 'firstName lastName');
     res.json(records);
   } catch (err) {
-    console.log('Error al obtener registros de asistencia:', err);
     res.status(500).json({ message: 'Error al obtener registros de asistencia' });
   }
 });

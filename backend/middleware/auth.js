@@ -9,7 +9,6 @@ const auth = (req, res, next) => {
       token = authHeader.replace('Bearer ', '');
     }
   }
-  console.log('Token recibido:', token); // Para depuración
 
   if (!token) return res.status(401).json({ message: 'Acceso denegado' });
 

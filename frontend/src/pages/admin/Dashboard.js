@@ -38,6 +38,8 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { AppBar, Toolbar } from '@mui/material';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -62,6 +64,8 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [subRoles, setSubRoles] = useState([]);
+  
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -75,6 +79,18 @@ const AdminDashboard = () => {
       setAttendanceRecords(res.data);
     };
     fetchAttendance();
+    const fetchSubRoles = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:5000/api/subroles', {
+          headers: { 'x-auth-token': token }
+        });
+        setSubRoles(res.data);
+      } catch (err) {
+        // Manejo de error opcional
+      }
+    };
+    fetchSubRoles();
   }, []);
 
   const fetchData = async () => {
@@ -141,8 +157,18 @@ const AdminDashboard = () => {
         : 'http://localhost:5000/api/admin/users';
       
       const method = currentUser?._id ? 'put' : 'post';
+
+      // Incluye los nuevos campos
+      const userData = {
+        email: currentUser.email,
+        password: currentUser.password,
+        role: currentUser.role,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        subRole: currentUser.subRole
+      };
       
-      await axios[method](url, currentUser, {
+      await axios[method](url, userData, {
         headers: { 'x-auth-token': token }
       });
       
@@ -188,7 +214,9 @@ const AdminDashboard = () => {
   const exportToExcel = () => {
     // Usa filteredAttendance si quieres exportar solo los filtrados
     const data = filteredAttendance.map(record => ({
-      Usuario: record.user?.email || 'Sin usuario',
+      Usuario: record.user
+        ? `${record.user.firstName || ''} ${record.user.lastName || ''}`.trim() || 'Sin nombre'
+        : 'Sin usuario',
       Tipo: record.type,
       Notas: record.notes,
       Fecha: new Date(record.timestamp || record.createdAt).toLocaleString(),
@@ -204,165 +232,191 @@ const AdminDashboard = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
-        Panel de Administración
-      </Typography>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Estadísticas Rápidas */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={3}>
-          <Card elevation={3}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <UsersIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Usuarios</Typography>
-                  <Typography variant="h4">{attendanceData.totalEmployees}</Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={3}>
-          <Card elevation={3}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <AttendanceIcon color="success" sx={{ fontSize: 40, mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Presentes Hoy</Typography>
-                  <Typography variant="h4">{attendanceData.presentToday}</Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={3}>
-          <Card elevation={3}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <AttendanceIcon color="warning" sx={{ fontSize: 40, mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Tardanzas Hoy</Typography>
-                  <Typography variant="h4">{attendanceData.lateToday}</Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={3}>
-          <Card elevation={3}>
-            <CardContent>
-              <Box display="flex" alignItems="center">
-                <AttendanceIcon color="error" sx={{ fontSize: 40, mr: 2 }} />
-                <Box>
-                  <Typography variant="h6">Ausentes Hoy</Typography>
-                  <Typography variant="h4">{attendanceData.absentToday}</Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Barra de búsqueda y acciones */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <TextField
-          variant="outlined"
-          placeholder="Buscar usuarios..."
-          size="small"
-          InputProps={{ startAdornment: <SearchIcon /> }}
-          sx={{ width: 300 }}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setCurrentUser({ email: '', password: '', role: 'employee' });
-            setOpenDialog(true);
-          }}
-        >
-          Nuevo Usuario
-        </Button>
-      </Box>
-
-      {/* Tabla de usuarios */}
-      <Paper elevation={3} sx={{ p: 2 }}>
-        {loading ? (
-          <Box display="flex" justifyContent="center" py={4}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Rol</TableCell>
-                  <TableCell>Último Acceso</TableCell>
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user._id}>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={user.role}
-                        color={user.role === 'admin' ? 'primary' : 'default'}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {user.lastLogin ? format(new Date(user.lastLogin), 'PPPpp', { locale: es }) : 'Nunca'}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        size="small"
-                        startIcon={<EditIcon />}
-                        onClick={() => {
-                          setCurrentUser(user);
-                          setOpenDialog(true);
-                        }}
-                        sx={{ mr: 1 }}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="small"
-                        startIcon={<DeleteIcon />}
-                        color="error"
-                        onClick={() => handleDelete(user._id)}
-                        disabled={user.role === 'admin'}
-                      >
-                        Eliminar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Paper>
-
-      {/* Tabla de registros de asistencia */}
-      <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Registros de Asistencia
+    <>
+      <AppBar position="static" sx={{ mb: 4 }}>
+        <Toolbar>
+          <Button color="inherit" component={Link} to="/admin/dashboard">
+            Dashboard
+          </Button>
+          <Button color="inherit" component={Link} to="/admin/users">
+            Usuarios
+          </Button>
+          <Button color="inherit" component={Link} to="/admin/subroles">
+            SubRoles
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
+          Panel de Administración
         </Typography>
-        {/* <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Estadísticas Rápidas */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={3}>
+            <Card elevation={3}>
+              <CardContent>
+                <Box display="flex" alignItems="center">
+                  <UsersIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
+                  <Box>
+                    <Typography variant="h6">Usuarios</Typography>
+                    <Typography variant="h4">{attendanceData.totalEmployees}</Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card elevation={3}>
+              <CardContent>
+                <Box display="flex" alignItems="center">
+                  <AttendanceIcon color="success" sx={{ fontSize: 40, mr: 2 }} />
+                  <Box>
+                    <Typography variant="h6">Presentes Hoy</Typography>
+                    <Typography variant="h4">{attendanceData.presentToday}</Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card elevation={3}>
+              <CardContent>
+                <Box display="flex" alignItems="center">
+                  <AttendanceIcon color="warning" sx={{ fontSize: 40, mr: 2 }} />
+                  <Box>
+                    <Typography variant="h6">Tardanzas Hoy</Typography>
+                    <Typography variant="h4">{attendanceData.lateToday}</Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card elevation={3}>
+              <CardContent>
+                <Box display="flex" alignItems="center">
+                  <AttendanceIcon color="error" sx={{ fontSize: 40, mr: 2 }} />
+                  <Box>
+                    <Typography variant="h6">Ausentes Hoy</Typography>
+                    <Typography variant="h4">{attendanceData.absentToday}</Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Barra de búsqueda y acciones */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+          <TextField
+            variant="outlined"
+            placeholder="Buscar usuarios..."
+            size="small"
+            InputProps={{ startAdornment: <SearchIcon /> }}
+            sx={{ width: 300 }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setCurrentUser({ email: '', password: '', role: 'employee' });
+              setOpenDialog(true);
+            }}
+          >
+            Nuevo Usuario
+          </Button>
+        </Box>
+
+        {/* Tabla de usuarios */}
+        <Paper elevation={3} sx={{ p: 2 }}>
+          {loading ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Nombre</TableCell>
+                    <TableCell>Apellido</TableCell>
+                    <TableCell>SubRol</TableCell>
+                    <TableCell>Rol</TableCell>
+                    <TableCell>Último Acceso</TableCell>
+                    <TableCell>Acciones</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user._id}>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.firstName}</TableCell>
+                      <TableCell>{user.lastName}</TableCell>
+                      <TableCell>
+                        {user.subRole?.description
+                          ? `${user.subRole.description} ($${user.subRole.price}/h)`
+                          : 'Sin subRol'}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={user.role}
+                          color={user.role === 'admin' ? 'primary' : 'default'}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {user.lastLogin
+                          ? format(new Date(user.lastLogin), 'PPPpp', { locale: es })
+                          : 'Nunca'}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="small"
+                          startIcon={<EditIcon />}
+                          onClick={() => {
+                            setCurrentUser(user);
+                            setOpenDialog(true);
+                          }}
+                          sx={{ mr: 1 }}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          size="small"
+                          startIcon={<DeleteIcon />}
+                          color="error"
+                          onClick={() => handleDelete(user._id)}
+                          disabled={user.role === 'admin'}
+                        >
+                          Eliminar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Paper>
+
+        {/* Tabla de registros de asistencia */}
+        <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Registros de Asistencia
+          </Typography>
+          {/* <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <TextField
             label="Desde"
             type="date"
@@ -380,61 +434,63 @@ const AdminDashboard = () => {
             InputLabelProps={{ shrink: true }}
           />
         </Box> */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <TextField
-            label="Desde"
-            type="date"
-            size="small"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            label="Hasta"
-            type="date"
-            size="small"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-          <Button variant="contained" color="success" onClick={exportToExcel}>
-            Exportar a Excel
-          </Button>
-        </Box>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Usuario</TableCell>
-                <TableCell>Tipo</TableCell>
-                <TableCell>Notas</TableCell>
-                <TableCell>Fecha</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredAttendance.map((record) => (
-                <TableRow key={record._id}>
-                  <TableCell>{record.user?.email || 'Sin usuario'}</TableCell>
-                  <TableCell>{record.type}</TableCell>
-                  <TableCell>{record.notes}</TableCell>
-                  <TableCell>
-                    {record.timestamp
-                      ? new Date(record.timestamp).toLocaleString()
-                      : (record.createdAt ? new Date(record.createdAt).toLocaleString() : 'Sin fecha')}
-                  </TableCell>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <TextField
+              label="Desde"
+              type="date"
+              size="small"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Hasta"
+              type="date"
+              size="small"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <Button variant="contained" color="success" onClick={exportToExcel}>
+              Exportar a Excel
+            </Button>
+          </Box>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Usuario</TableCell>
+                  <TableCell>Tipo</TableCell>
+                  <TableCell>Notas</TableCell>
+                  <TableCell>Fecha</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+              </TableHead>
+              <TableBody>
+                {filteredAttendance.map((record) => (
+                  <TableRow key={record._id}>
+                    <TableCell>
+                      {record.user
+                        ? `${record.user.firstName || ''} ${record.user.lastName || ''}`.trim() || 'Sin nombre'
+                        : 'Sin usuario'}
+                    </TableCell>
+                    <TableCell>{record.type}</TableCell>
+                    <TableCell>{record.notes}</TableCell>
+                    <TableCell>
+                      {record.timestamp
+                        ? new Date(record.timestamp).toLocaleString()
+                        : (record.createdAt ? new Date(record.createdAt).toLocaleString() : 'Sin fecha')}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
 
-      {/* Gráficos (sección adicional) */}
-      <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>
+        {/* <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>
         Estadísticas Mensuales
       </Typography>
       <Paper elevation={3} sx={{ p: 3, height: 300 }}>
-        {/* Aquí iría un gráfico con Chart.js o similar */}
         <Box display="flex" alignItems="flex-end" height="100%">
           {attendanceData.monthlyAttendance.map((value, index) => (
             <Box
@@ -454,51 +510,80 @@ const AdminDashboard = () => {
             </Box>
           ))}
         </Box>
-      </Paper>
+      </Paper> */}
 
-      {/* Diálogo para editar/crear usuario */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>
-          {currentUser?._id ? 'Editar Usuario' : 'Nuevo Usuario'}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ minWidth: 400, pt: 1 }}>
-            <TextField
-              fullWidth
-              label="Email"
-              margin="normal"
-              value={currentUser?.email || ''}
-              onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
-            />
-            <TextField
-              fullWidth
-              label="Contraseña"
-              type="password"
-              margin="normal"
-              value={currentUser?.password || ''}
-              onChange={(e) => setCurrentUser({ ...currentUser, password: e.target.value })}
-            />
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Rol</InputLabel>
-              <Select
-                value={currentUser?.role || 'employee'}
-                label="Rol"
-                onChange={(e) => setCurrentUser({ ...currentUser, role: e.target.value })}
-              >
-                <MenuItem value="employee">Empleado</MenuItem>
-                <MenuItem value="admin">Administrador</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
-          <Button onClick={handleUserSubmit} variant="contained">
-            Guardar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+        {/* Diálogo para editar/crear usuario */}
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+          <DialogTitle>
+            {currentUser?._id ? 'Editar Usuario' : 'Nuevo Usuario'}
+          </DialogTitle>
+          <DialogContent>
+            <Box sx={{ minWidth: 400, pt: 1 }}>
+              <TextField
+                fullWidth
+                label="Email"
+                margin="normal"
+                value={currentUser?.email || ''}
+                onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
+              />
+              <TextField
+                fullWidth
+                label="Nombre"
+                margin="normal"
+                value={currentUser?.firstName || ''}
+                onChange={(e) => setCurrentUser({ ...currentUser, firstName: e.target.value })}
+              />
+              <TextField
+                fullWidth
+                label="Apellido"
+                margin="normal"
+                value={currentUser?.lastName || ''}
+                onChange={(e) => setCurrentUser({ ...currentUser, lastName: e.target.value })}
+              />
+              <TextField
+                fullWidth
+                label="Contraseña"
+                type="password"
+                margin="normal"
+                value={currentUser?.password || ''}
+                onChange={(e) => setCurrentUser({ ...currentUser, password: e.target.value })}
+              />
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Rol</InputLabel>
+                <Select
+                  value={currentUser?.role || 'employee'}
+                  label="Rol"
+                  onChange={(e) => setCurrentUser({ ...currentUser, role: e.target.value })}
+                >
+                  <MenuItem value="employee">Empleado</MenuItem>
+                  <MenuItem value="admin">Administrador</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>SubRol</InputLabel>
+                <Select
+                  value={currentUser?.subRole || ''}
+                  label="SubRol"
+                  onChange={(e) => setCurrentUser({ ...currentUser, subRole: e.target.value })}
+                >
+                  {subRoles.map((sr) => (
+                    <MenuItem key={sr._id} value={sr._id}>
+                      {sr.description} - ${sr.price}/hora
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
+            <Button onClick={handleUserSubmit} variant="contained">
+              Guardar
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </>
   );
 };
 

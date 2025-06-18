@@ -17,6 +17,9 @@ app.use('/api/auth', authRoutes);
 const adminRoutes = require('./routes/admin'); 
 app.use('/api/admin', adminRoutes);
 
+const subRoleRoutes = require('./routes/subRole');
+app.use('/api/subroles', subRoleRoutes);
+
 // Conexión a MongoDB Atlas (reemplaza <password> con tu contraseña)
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Conectado a MongoDB'))

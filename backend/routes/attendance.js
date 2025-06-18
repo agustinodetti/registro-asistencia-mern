@@ -28,7 +28,6 @@ router.post('/register', auth, async (req, res) => {
     res.status(201).json(newRecord);
 
   } catch (err) {
-    console.log(err)
     res.status(500).json({ message: 'Error al registrar asistencia' });
   }
 });
