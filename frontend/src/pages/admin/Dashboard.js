@@ -41,7 +41,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -59,6 +60,8 @@ const AdminDashboard = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -108,7 +111,6 @@ const AdminDashboard = () => {
         headers: { 'x-auth-token': token }
       });
       setUsers(res.data);
-      console.log("RESPUESTA: ", res.data)
     } catch (err) {
       if (err.response?.status === 401) navigate('/login');
       setError('Error al cargar usuarios');
@@ -152,12 +154,12 @@ const AdminDashboard = () => {
   };
 
   // Eliminar usuario
-  const handleDelete = async (userId) => {
+  const handleDelete = async (user) => {
     if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+      await axios.delete(`http://localhost:5000/api/admin/users/${user}`, {
         headers: { 'x-auth-token': token }
       });
       fetchUsers();
@@ -166,13 +168,40 @@ const AdminDashboard = () => {
     }
   };
 
-  
+  const filteredAttendance = attendanceRecords.filter(record => {
+    const recordDate = new Date(record.timestamp || record.createdAt);
+    const from = startDate ? new Date(startDate) : null;
+    const to = endDate ? new Date(endDate) : null;
+
+    if (from && recordDate < from) return false;
+    if (to && recordDate > to) return false;
+    return true;
+  });
 
   // Filtrar usuarios
   const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Exportar a Excel
+  const exportToExcel = () => {
+    // Usa filteredAttendance si quieres exportar solo los filtrados
+    const data = filteredAttendance.map(record => ({
+      Usuario: record.user?.email || 'Sin usuario',
+      Tipo: record.type,
+      Notas: record.notes,
+      Fecha: new Date(record.timestamp || record.createdAt).toLocaleString(),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistencias');
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const file = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(file, 'registros_asistencia.xlsx');
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -327,11 +356,51 @@ const AdminDashboard = () => {
           </TableContainer>
         )}
       </Paper>
+
       {/* Tabla de registros de asistencia */}
       <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>
           Registros de Asistencia
         </Typography>
+        {/* <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <TextField
+            label="Desde"
+            type="date"
+            size="small"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Hasta"
+            type="date"
+            size="small"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Box> */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <TextField
+            label="Desde"
+            type="date"
+            size="small"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            label="Hasta"
+            type="date"
+            size="small"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <Button variant="contained" color="success" onClick={exportToExcel}>
+            Exportar a Excel
+          </Button>
+        </Box>
         <TableContainer>
           <Table>
             <TableHead>
@@ -343,7 +412,7 @@ const AdminDashboard = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {attendanceRecords.map((record) => (
+              {filteredAttendance.map((record) => (
                 <TableRow key={record._id}>
                   <TableCell>{record.user?.email || 'Sin usuario'}</TableCell>
                   <TableCell>{record.type}</TableCell>

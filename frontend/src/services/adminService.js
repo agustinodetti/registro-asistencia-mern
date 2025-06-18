@@ -35,10 +35,10 @@ export const adminService = {
   },
 
   // Actualizar usuario
-  updateUser: async (userId, userData, token) => {
+  updateUser: async (user, userData, token) => {
     try {
       const response = await axios.put(
-        `${API_URL}/users/${userId}`,
+        `${API_URL}/users/${user}`,
         userData,
         getAuthHeaders(token)
       );
@@ -50,10 +50,10 @@ export const adminService = {
   },
 
   // Eliminar usuario
-  deleteUser: async (userId, token) => {
+  deleteUser: async (user, token) => {
     try {
       const response = await axios.delete(
-        `${API_URL}/users/${userId}`,
+        `${API_URL}/users/${user}`,
         getAuthHeaders(token)
       );
       return response.data;

@@ -8,7 +8,7 @@ router.post('/register', auth, async (req, res) => {
   const { type, notes } = req.body; // type: 'in' o 'out'
 
   try {
-    const lastRecord = await Attendance.findOne({ userId: req.user.id }).sort({ timestamp: -1 });
+    const lastRecord = await Attendance.findOne({ user: req.user.id }).sort({ timestamp: -1 });
     
     if (lastRecord && lastRecord.type === type) {
       return res.status(400).json({ 
@@ -28,6 +28,7 @@ router.post('/register', auth, async (req, res) => {
     res.status(201).json(newRecord);
 
   } catch (err) {
+    console.log(err)
     res.status(500).json({ message: 'Error al registrar asistencia' });
   }
 });
@@ -36,7 +37,7 @@ router.post('/register', auth, async (req, res) => {
 // GET /api/attendance/history - Obtener historial del usuario
 router.get('/history', auth, async (req, res) => {
   try {
-    const records = await Attendance.find({ userId: req.user.id })
+    const records = await Attendance.find({ user: req.user.id })
       .sort({ timestamp: -1 })
       .limit(5);
     res.json(records);
