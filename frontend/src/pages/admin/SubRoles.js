@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   Paper, Table, TableHead, TableRow, TableCell, TableBody,
-  Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Box
+  Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Box,
+  AppBar, Toolbar
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 const SubRoles = () => {
   const [subRoles, setSubRoles] = useState([]);
@@ -63,62 +65,78 @@ const SubRoles = () => {
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <h2>Gestión de SubRoles</h2>
-        <Button variant="contained" onClick={() => handleOpen()}>Nuevo SubRole</Button>
-      </Box>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Descripción</TableCell>
-            <TableCell>Precio por hora</TableCell>
-            <TableCell>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {subRoles.map((sr) => (
-            <TableRow key={sr._id}>
-              <TableCell>{sr.description}</TableCell>
-              <TableCell>${sr.price}</TableCell>
-              <TableCell>
-                <Button size="small" onClick={() => handleOpen(sr)}>Editar</Button>
-                <Button size="small" color="error" onClick={() => handleDelete(sr._id)}>Eliminar</Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{editing ? 'Editar SubRole' : 'Nuevo SubRole'}</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Descripción"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Precio por hora"
-            name="price"
-            type="number"
-            value={form.price}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            Guardar
+    <>
+      {/* Menú de navegación */}
+      <AppBar position="static" sx={{ mb: 4 }}>
+        <Toolbar>
+          <Button color="inherit" component={Link} to="/admin/dashboard">
+            Dashboard
           </Button>
-        </DialogActions>
-      </Dialog>
-    </Paper>
+          <Button color="inherit" component={Link} to="/admin/users">
+            Usuarios
+          </Button>
+          <Button color="inherit" component={Link} to="/admin/subroles">
+            SubRoles
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <Paper sx={{ p: 3 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <h2>Gestión de SubRoles</h2>
+          <Button variant="contained" onClick={() => handleOpen()}>Nuevo SubRole</Button>
+        </Box>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Descripción</TableCell>
+              <TableCell>Precio por hora</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {subRoles.map((sr) => (
+              <TableRow key={sr._id}>
+                <TableCell>{sr.description}</TableCell>
+                <TableCell>${sr.price}</TableCell>
+                <TableCell>
+                  <Button size="small" onClick={() => handleOpen(sr)}>Editar</Button>
+                  <Button size="small" color="error" onClick={() => handleDelete(sr._id)}>Eliminar</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        <Dialog open={open} onClose={handleClose}>
+          <DialogTitle>{editing ? 'Editar SubRole' : 'Nuevo SubRole'}</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Descripción"
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Precio por hora"
+              name="price"
+              type="number"
+              value={form.price}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancelar</Button>
+            <Button onClick={handleSubmit} variant="contained">
+              Guardar
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Paper>
+    </>
   );
 };
 

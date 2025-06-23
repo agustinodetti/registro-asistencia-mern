@@ -65,6 +65,8 @@ const AdminDashboard = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [subRoles, setSubRoles] = useState([]);
+  const [userFilter, setUserFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   
 
   // Cargar datos al montar el componente
@@ -112,10 +114,10 @@ const AdminDashboard = () => {
 
   // Datos de ejemplo para gráficos (reemplazar con datos reales)
   const attendanceData = {
-    totalEmployees: 24,
-    presentToday: 18,
-    lateToday: 3,
-    absentToday: 3,
+    totalEmployees: 0,
+    presentToday: 0,
+    lateToday: 0,
+    absentToday: 0,
     monthlyAttendance: [85, 92, 78, 95, 87, 90] // % por mes
   };
 
@@ -230,6 +232,82 @@ const AdminDashboard = () => {
     const file = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(file, 'registros_asistencia.xlsx');
   };
+
+  // Exportar tiempos de asistencia a Excel
+  const exportTiemposToExcel = () => {
+    const data = tiemposPorUsuario.map(item => ({
+      Usuario: item.user
+        ? `${item.user.firstName || ''} ${item.user.lastName || ''}`.trim() || 'Sin nombre'
+        : 'Sin usuario',
+      Fecha: item.fecha,
+      Ingreso: item.in ? new Date(item.in).toLocaleTimeString() : '—',
+      Egreso: item.out ? new Date(item.out).toLocaleTimeString() : '—',
+      'Tiempo Total': item.tiempo
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tiempos de Asistencia');
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const file = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(file, 'tiempos_asistencia.xlsx');
+  };
+
+  // Calcular tiempos de asistencia por usuario y fecha
+  function calcularTiempos(records) {
+    // Agrupa por usuario y fecha
+    const agrupados = {};
+
+    records.forEach((rec) => {
+      if (!rec.user) return;
+      const userId = rec.user._id || rec.user;
+      const fecha = new Date(rec.timestamp || rec.createdAt).toISOString().slice(0, 10);
+
+      // Aplica filtros
+      if (userFilter && userId !== userFilter) return;
+      if (dateFilter && fecha !== dateFilter) return;
+
+      const key = `${userId}-${fecha}`;
+      if (!agrupados[key]) {
+        agrupados[key] = {
+          user: rec.user,
+          fecha,
+          in: null,
+          out: null
+        };
+      }
+      if (rec.type === 'in' || rec.type === 'entrada') {
+        if (!agrupados[key].in || new Date(rec.timestamp || rec.createdAt) < new Date(agrupados[key].in)) {
+          agrupados[key].in = rec.timestamp || rec.createdAt;
+        }
+      }
+      if (rec.type === 'out' || rec.type === 'salida') {
+        if (!agrupados[key].out || new Date(rec.timestamp || rec.createdAt) > new Date(agrupados[key].out)) {
+          agrupados[key].out = rec.timestamp || rec.createdAt;
+        }
+      }
+    });
+
+    // Calcula el tiempo total
+    return Object.values(agrupados).map((item) => {
+      let tiempo = '';
+      if (item.in && item.out) {
+        const diffMs = new Date(item.out) - new Date(item.in);
+        const horas = Math.floor(diffMs / (1000 * 60 * 60));
+        const minutos = Math.floor((diffMs / (1000 * 60)) % 60);
+        tiempo = `${horas}h ${minutos}m`;
+      } else {
+        tiempo = 'Sin datos completos';
+      }
+      return {
+        ...item,
+        tiempo
+      };
+    });
+  }
+
+  const tiemposPorUsuario = calcularTiempos(attendanceRecords);
 
   return (
     <>
@@ -480,6 +558,73 @@ const AdminDashboard = () => {
                         ? new Date(record.timestamp).toLocaleString()
                         : (record.createdAt ? new Date(record.createdAt).toLocaleString() : 'Sin fecha')}
                     </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+
+        <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Tiempos de Asistencia por Usuario
+          </Typography>
+          {/* Filtros */}
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Usuario</InputLabel>
+              <Select
+                value={userFilter}
+                label="Usuario"
+                onChange={(e) => setUserFilter(e.target.value)}
+              >
+                <MenuItem value="">Todos</MenuItem>
+                {users.map((u) => (
+                  <MenuItem key={u._id} value={u._id}>
+                    {u.firstName} {u.lastName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              label="Fecha"
+              type="date"
+              size="small"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <Button variant="contained" color="success" onClick={exportTiemposToExcel}>
+              Exportar a Excel
+            </Button>
+          </Box>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Usuario</TableCell>
+                  <TableCell>Fecha</TableCell>
+                  <TableCell>Ingreso</TableCell>
+                  <TableCell>Egreso</TableCell>
+                  <TableCell>Tiempo Total</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tiemposPorUsuario.map((item, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>
+                      {item.user
+                        ? `${item.user.firstName || ''} ${item.user.lastName || ''}`.trim() || 'Sin nombre'
+                        : 'Sin usuario'}
+                    </TableCell>
+                    <TableCell>{item.fecha}</TableCell>
+                    <TableCell>
+                      {item.in ? new Date(item.in).toLocaleTimeString() : '—'}
+                    </TableCell>
+                    <TableCell>
+                      {item.out ? new Date(item.out).toLocaleTimeString() : '—'}
+                    </TableCell>
+                    <TableCell>{item.tiempo}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
