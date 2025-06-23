@@ -235,15 +235,27 @@ const AdminDashboard = () => {
 
   // Exportar tiempos de asistencia a Excel
   const exportTiemposToExcel = () => {
-    const data = tiemposPorUsuario.map(item => ({
-      Usuario: item.user
-        ? `${item.user.firstName || ''} ${item.user.lastName || ''}`.trim() || 'Sin nombre'
-        : 'Sin usuario',
-      Fecha: item.fecha,
-      Ingreso: item.in ? new Date(item.in).toLocaleTimeString() : '—',
-      Egreso: item.out ? new Date(item.out).toLocaleTimeString() : '—',
-      'Tiempo Total': item.tiempo
-    }));
+    const data = tiemposPorUsuario.map(item => {
+      let horas = 0;
+      if (item.in && item.out) {
+        const diffMs = new Date(item.out) - new Date(item.in);
+        horas = diffMs / (1000 * 60 * 60);
+      }
+      const precio = item.user?.subRole?.price || 0;
+      const total = (horas * precio).toFixed(2);
+
+      return {
+        Usuario: item.user
+          ? `${item.user.firstName || ''} ${item.user.lastName || ''}`.trim() || 'Sin nombre'
+          : 'Sin usuario',
+        Fecha: item.fecha,
+        Ingreso: item.in ? new Date(item.in).toLocaleTimeString() : '—',
+        Egreso: item.out ? new Date(item.out).toLocaleTimeString() : '—',
+        'Tiempo Total': item.tiempo,
+        'Precio por hora': precio,
+        Total: item.in && item.out ? total : '—'
+      };
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -251,7 +263,7 @@ const AdminDashboard = () => {
 
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const file = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(file, 'tiempos_asistencia.xlsx');
+    saveAs(file, 'liquidacion_asistencia.xlsx');
   };
 
   // Calcular tiempos de asistencia por usuario y fecha
@@ -494,24 +506,6 @@ const AdminDashboard = () => {
           <Typography variant="h6" sx={{ mb: 2 }}>
             Registros de Asistencia
           </Typography>
-          {/* <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <TextField
-            label="Desde"
-            type="date"
-            size="small"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-          <TextField
-            label="Hasta"
-            type="date"
-            size="small"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-        </Box> */}
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <TextField
               label="Desde"
@@ -607,55 +601,48 @@ const AdminDashboard = () => {
                   <TableCell>Ingreso</TableCell>
                   <TableCell>Egreso</TableCell>
                   <TableCell>Tiempo Total</TableCell>
+                  <TableCell>Precio por hora</TableCell>
+                  <TableCell>Total</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {tiemposPorUsuario.map((item, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>
-                      {item.user
-                        ? `${item.user.firstName || ''} ${item.user.lastName || ''}`.trim() || 'Sin nombre'
-                        : 'Sin usuario'}
-                    </TableCell>
-                    <TableCell>{item.fecha}</TableCell>
-                    <TableCell>
-                      {item.in ? new Date(item.in).toLocaleTimeString() : '—'}
-                    </TableCell>
-                    <TableCell>
-                      {item.out ? new Date(item.out).toLocaleTimeString() : '—'}
-                    </TableCell>
-                    <TableCell>{item.tiempo}</TableCell>
-                  </TableRow>
-                ))}
+                {tiemposPorUsuario.map((item, idx) => {
+          // AGREGA ESTE BLOQUE DE CALCULO:
+          let horas = 0;
+          if (item.in && item.out) {
+                    const diffMs = new Date(item.out) - new Date(item.in);
+                    horas = diffMs / (1000 * 60 * 60);
+                  }
+                  const precio = item.user?.subRole?.price || 0;
+                  const total = (horas * precio).toFixed(2);
+
+                  return (
+                    <TableRow key={idx}>
+                      <TableCell>
+                        {item.user
+                          ? `${item.user.firstName || ''} ${item.user.lastName || ''}`.trim() || 'Sin nombre'
+                          : 'Sin usuario'}
+                      </TableCell>
+                      <TableCell>{item.fecha}</TableCell>
+                      <TableCell>
+                        {item.in ? new Date(item.in).toLocaleTimeString() : '—'}
+                      </TableCell>
+                      <TableCell>
+                        {item.out ? new Date(item.out).toLocaleTimeString() : '—'}
+                      </TableCell>
+                      <TableCell>{item.tiempo}</TableCell>
+                      {/* NUEVAS COLUMNAS */}
+                      <TableCell>${precio}</TableCell>
+                      <TableCell>
+                        {item.in && item.out ? `$${total}` : '—'}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
         </Paper>
-
-        {/* <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>
-        Estadísticas Mensuales
-      </Typography>
-      <Paper elevation={3} sx={{ p: 3, height: 300 }}>
-        <Box display="flex" alignItems="flex-end" height="100%">
-          {attendanceData.monthlyAttendance.map((value, index) => (
-            <Box
-              key={index}
-              sx={{
-                width: 40,
-                height: `${value}%`,
-                bgcolor: 'primary.main',
-                mx: 0.5,
-                display: 'flex',
-                alignItems: 'flex-end',
-                justifyContent: 'center',
-                color: 'white'
-              }}
-            >
-              {value}%
-            </Box>
-          ))}
-        </Box>
-      </Paper> */}
 
         {/* Diálogo para editar/crear usuario */}
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>

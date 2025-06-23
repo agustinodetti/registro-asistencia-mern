@@ -106,10 +106,25 @@ router.delete('/users/:id', auth, isAdmin, async (req, res) => {
   }
 });
 
+// // GET /api/admin/attendance - Listar todos los registros de asistencia
+// router.get('/attendance', auth, isAdmin, async (req, res) => {
+//   try {
+//     const records = await Attendance.find().populate('user', 'firstName lastName');
+//     res.json(records);
+//   } catch (err) {
+//     res.status(500).json({ message: 'Error al obtener registros de asistencia' });
+//   }
+// });
+
 // GET /api/admin/attendance - Listar todos los registros de asistencia
 router.get('/attendance', auth, isAdmin, async (req, res) => {
   try {
-    const records = await Attendance.find().populate('user', 'firstName lastName');
+    const records = await Attendance.find()
+      .populate({
+        path: 'user',
+        select: 'firstName lastName subRole',
+        populate: { path: 'subRole', select: 'description price' }
+      });
     res.json(records);
   } catch (err) {
     res.status(500).json({ message: 'Error al obtener registros de asistencia' });
