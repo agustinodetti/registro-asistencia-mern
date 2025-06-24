@@ -22,25 +22,27 @@ const Register = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    role: 'employee'
+    firstName: '',
+    lastName: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+ const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Siempre enviar rol: 'employee'
+    const data = { ...formData, role: 'employee' };
     setLoading(true);
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', formData);
+      const response = await axios.post('http://localhost:5000/api/auth/register', data);
       
       if (response.data.token) {
         setSuccess(true);
@@ -91,11 +93,35 @@ const Register = () => {
             margin="normal"
             required
             fullWidth
+            id="firstName"
+            label="Nombre"
+            name="firstName"
+            autoComplete="firstName"
+            autoFocus
+            value={formData.firstName}
+            onChange={handleChange}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="lastName"
+            label="Apellido"
+            name="lastName"
+            autoComplete="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
             id="email"
             label="Email"
             name="email"
             autoComplete="email"
-            autoFocus
             value={formData.email}
             onChange={handleChange}
             disabled={loading}
@@ -114,21 +140,6 @@ const Register = () => {
             inputProps={{ minLength: 6 }}
             disabled={loading}
           />
-          <FormControl fullWidth margin="normal" disabled={loading}>
-            <InputLabel id="role-label">Rol *</InputLabel>
-            <Select
-              labelId="role-label"
-              id="role"
-              name="role"
-              value={formData.role}
-              label="Rol"
-              onChange={handleChange}
-              required
-            >
-              <MenuItem value="employee">Empleado</MenuItem>
-              <MenuItem value="admin">Administrador</MenuItem>
-            </Select>
-          </FormControl>
           <Button
             type="submit"
             fullWidth

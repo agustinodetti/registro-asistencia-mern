@@ -47,12 +47,15 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import UserBar from '../../components/UserBar';
 
+const todayStr = new Date().toISOString().slice(0, 10);
+
+
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
-  totalUsers: 0,
-  presentToday: 0,
-  lateToday: 0,
-  absentToday: 0
+    totalUsers: 0,
+    presentToday: 0,
+    lateToday: 0,
+    absentToday: 0
   });
   const [users, setUsers] = useState([]);
   const [attendanceStats, setAttendanceStats] = useState({});
@@ -63,12 +66,20 @@ const AdminDashboard = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  //const [startDate, setStartDate] = useState('');
+  //const [endDate, setEndDate] = useState('');
   const [subRoles, setSubRoles] = useState([]);
   const [userFilter, setUserFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
-  
+  //const [dateFilter, setDateFilter] = useState('');
+
+  // Presetea los filtros de fecha con la fecha actual
+  const [startDate, setStartDate] = useState(todayStr);      // Para "Registros de Asistencia"
+  const [endDate, setEndDate] = useState('');                // Puedes dejar vacío o también preseteado
+  const [dateFilter, setDateFilter] = useState(todayStr);    // Para "Tiempos de Asistencia por Usuario"
+
+
+
+
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -98,19 +109,19 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     const token = localStorage.getItem('token');
-    
+
     try {
       const [users, stats] = await Promise.all([
         adminService.getUsers(token),
         adminService.getStats(token)
       ]);
-      
+
       setUsers(users);
       setStats(stats);
-      } 
+    }
     catch (error) {
       setError(error.message);
-      }
+    }
   };
 
   // Datos de ejemplo para gráficos (reemplazar con datos reales)
@@ -155,10 +166,10 @@ const AdminDashboard = () => {
   const handleUserSubmit = async () => {
     try {
       const token = localStorage.getItem('token');
-      const url = currentUser?._id 
+      const url = currentUser?._id
         ? `http://localhost:5000/api/admin/users/${currentUser._id}`
         : 'http://localhost:5000/api/admin/users';
-      
+
       const method = currentUser?._id ? 'put' : 'post';
 
       // Incluye los nuevos campos
@@ -170,11 +181,11 @@ const AdminDashboard = () => {
         lastName: currentUser.lastName,
         subRole: currentUser.subRole
       };
-      
+
       await axios[method](url, userData, {
         headers: { 'x-auth-token': token }
       });
-      
+
       fetchUsers();
       setOpenDialog(false);
     } catch (err) {
@@ -185,7 +196,7 @@ const AdminDashboard = () => {
   // Eliminar usuario
   const handleDelete = async (user) => {
     if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
-    
+
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`http://localhost:5000/api/admin/users/${user}`, {
@@ -431,77 +442,7 @@ const AdminDashboard = () => {
           </Button>
         </Box>
 
-        {/* Tabla de usuarios */}
-        <Paper elevation={3} sx={{ p: 2 }}>
-          {loading ? (
-            <Box display="flex" justifyContent="center" py={4}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Nombre</TableCell>
-                    <TableCell>Apellido</TableCell>
-                    <TableCell>SubRol</TableCell>
-                    <TableCell>Rol</TableCell>
-                    <TableCell>Último Acceso</TableCell>
-                    <TableCell>Acciones</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user._id}>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.firstName}</TableCell>
-                      <TableCell>{user.lastName}</TableCell>
-                      <TableCell>
-                        {user.subRole?.description
-                          ? `${user.subRole.description} ($${user.subRole.price}/h)`
-                          : 'Sin subRol'}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.role}
-                          color={user.role === 'admin' ? 'primary' : 'default'}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {user.lastLogin
-                          ? format(new Date(user.lastLogin), 'PPPpp', { locale: es })
-                          : 'Nunca'}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="small"
-                          startIcon={<EditIcon />}
-                          onClick={() => {
-                            setCurrentUser(user);
-                            setOpenDialog(true);
-                          }}
-                          sx={{ mr: 1 }}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          size="small"
-                          startIcon={<DeleteIcon />}
-                          color="error"
-                          onClick={() => handleDelete(user._id)}
-                          disabled={user.role === 'admin'}
-                        >
-                          Eliminar
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Paper>
+        
 
         {/* Tabla de registros de asistencia */}
         <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
@@ -609,9 +550,9 @@ const AdminDashboard = () => {
               </TableHead>
               <TableBody>
                 {tiemposPorUsuario.map((item, idx) => {
-          // AGREGA ESTE BLOQUE DE CALCULO:
-          let horas = 0;
-          if (item.in && item.out) {
+                  // AGREGA ESTE BLOQUE DE CALCULO:
+                  let horas = 0;
+                  if (item.in && item.out) {
                     const diffMs = new Date(item.out) - new Date(item.in);
                     horas = diffMs / (1000 * 60 * 60);
                   }

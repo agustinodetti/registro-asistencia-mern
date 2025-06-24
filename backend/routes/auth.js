@@ -35,7 +35,7 @@ router.post('/login', async (req, res) => {
 
 // Ruta de Registro (POST /api/auth/register)
 router.post('/register', async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, password, firstName, lastName, role } = req.body;
 
   try {
     // Validar si el email ya existe
@@ -48,6 +48,8 @@ router.post('/register', async (req, res) => {
     const newUser = new User({
       email,
       password, // Se encriptará automáticamente gracias al "pre-save" en el modelo
+      firstName,
+      lastName,
       role: role || 'employee' // Si no se especifica, será 'employee'
     });
 
