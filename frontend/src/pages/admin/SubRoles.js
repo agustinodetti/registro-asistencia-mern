@@ -6,6 +6,8 @@ import {
   AppBar, Toolbar
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import UserBar from '../../components/UserBar';
+
 
 const SubRoles = () => {
   const [subRoles, setSubRoles] = useState([]);
@@ -67,19 +69,7 @@ const SubRoles = () => {
   return (
     <>
       {/* Menú de navegación */}
-      <AppBar position="static" sx={{ mb: 4 }}>
-        <Toolbar>
-          <Button color="inherit" component={Link} to="/admin/dashboard">
-            Dashboard
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/users">
-            Usuarios
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/subroles">
-            SubRoles
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <UserBar />
       <Paper sx={{ p: 3 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <h2>Gestión de SubRoles</h2>

@@ -10,6 +10,8 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import UserBar from '../../components/UserBar';
+
 
 const Users = () => {
   // Estados y funciones relacionados con usuarios
@@ -101,19 +103,7 @@ const Users = () => {
   return (
     <>
       {/* Menú de navegación */}
-      <AppBar position="static" sx={{ mb: 4 }}>
-        <Toolbar>
-          <Button color="inherit" component={Link} to="/admin/dashboard">
-            Dashboard
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/users">
-            Usuarios
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/subroles">
-            SubRoles
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <UserBar />
       <Box sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
           Gestión de Usuarios

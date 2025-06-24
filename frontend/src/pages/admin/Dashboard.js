@@ -45,6 +45,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import UserBar from '../../components/UserBar';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -323,7 +324,7 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <AppBar position="static" sx={{ mb: 4 }}>
+      {/* <AppBar position="static" sx={{ mb: 4 }}>
         <Toolbar>
           <Button color="inherit" component={Link} to="/admin/dashboard">
             Dashboard
@@ -335,7 +336,8 @@ const AdminDashboard = () => {
             SubRoles
           </Button>
         </Toolbar>
-      </AppBar>
+      </AppBar> */}
+      <UserBar />
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
           Panel de Administración
