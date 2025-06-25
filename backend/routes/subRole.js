@@ -3,7 +3,7 @@ const router = express.Router();
 const { auth, isAdmin } = require('../middleware/auth');
 const SubRole = require('../models/SubRole');
 
-// Crear SubRole
+// POST /api/subroles/ - Crear SubRole 
 router.post('/', auth, isAdmin, async (req, res) => {
   try {
     const { description, price } = req.body;
@@ -15,7 +15,7 @@ router.post('/', auth, isAdmin, async (req, res) => {
   }
 });
 
-// Listar todos los SubRoles
+// GET /api/subroles/ - Listar todos los SubRoles
 router.get('/', auth, isAdmin, async (req, res) => {
   try {
     const subRoles = await SubRole.find();
@@ -25,7 +25,7 @@ router.get('/', auth, isAdmin, async (req, res) => {
   }
 });
 
-// Obtener un SubRole por ID
+// GET /api/subroles/:id - Obtener un SubRole por ID
 router.get('/:id', auth, isAdmin, async (req, res) => {
   try {
     const subRole = await SubRole.findById(req.params.id);
@@ -36,7 +36,7 @@ router.get('/:id', auth, isAdmin, async (req, res) => {
   }
 });
 
-// Actualizar un SubRole
+// PUT /api/subroles/:id - Actualizar un SubRole
 router.put('/:id', auth, isAdmin, async (req, res) => {
   try {
     const { description, price } = req.body;
@@ -52,7 +52,7 @@ router.put('/:id', auth, isAdmin, async (req, res) => {
   }
 });
 
-// Eliminar un SubRole
+// DELETE /api/subroles/:id - Eliminar un SubRole
 router.delete('/:id', auth, isAdmin, async (req, res) => {
   try {
     const subRole = await SubRole.findByIdAndDelete(req.params.id);
