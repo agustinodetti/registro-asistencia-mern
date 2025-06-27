@@ -29,8 +29,9 @@ const Login = () => {
       password
     });
 
-    // 1. Guardar token en localStorage
+    // 1. Guardar token y role de usuario en localStorage
     localStorage.setItem('token', response.data.token);
+    localStorage.setItem('role', response.data.role);
     
     // 2. Redirigir según el rol
     if (response.data.role === 'admin') {

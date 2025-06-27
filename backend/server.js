@@ -14,6 +14,9 @@ app.use('/api/attendance', attendanceRoutes);
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
+const userRoutes = require('./routes/profile');
+app.use('/api/profile', require('./routes/profile'));
+
 const adminRoutes = require('./routes/admin'); 
 app.use('/api/admin', adminRoutes);
 

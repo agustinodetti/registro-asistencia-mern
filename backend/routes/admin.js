@@ -4,8 +4,6 @@ const { auth, isAdmin } = require('../middleware/auth');
 const User = require('../models/User'); 
 const Attendance = require('../models/Attendance'); // Agrega esta línea al inicio
 
-
-
 // GET /api/admin/users - Listar usuarios
 router.get('/users', auth, isAdmin, async (req, res) => {
   try {
@@ -21,7 +19,7 @@ router.get('/stats', auth, isAdmin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const todayStart = new Date().setHours(0, 0, 0, 0);
-    
+
     const stats = {
       totalUsers,
       presentToday: await Attendance.countDocuments({ 
@@ -56,7 +54,6 @@ router.post('/users', auth, isAdmin, async (req, res) => {
     const newUser = new User({ email, password, role, firstName, lastName, subRole });
     await newUser.save();
 
-
     res.status(201).json({ 
       _id: newUser._id,
       email: newUser.email,
@@ -82,6 +79,7 @@ router.put('/users/:id', auth, isAdmin, async (req, res) => {
     user.lastName = req.body.lastName || user.lastName;
     user.subRole = req.body.subRole || user.subRole;
     if (req.body.password) user.password = req.body.password;
+
 
     await user.save();
     res.json(user);

@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -66,6 +67,17 @@ router.post('/register', async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ message: 'Error al registrar usuario' });
+  }
+});
+
+// GET /api/auth/me - Obtener datos del usuario autenticado
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('email firstName lastName');
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Error al obtener usuario' });
   }
 });
 
