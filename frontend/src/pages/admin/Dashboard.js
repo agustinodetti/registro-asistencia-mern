@@ -407,31 +407,6 @@ const AdminDashboard = () => {
           </Grid>
         </Grid>
 
-        {/* Barra de búsqueda y acciones */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-          <TextField
-            variant="outlined"
-            placeholder="Buscar usuarios..."
-            size="small"
-            InputProps={{ startAdornment: <SearchIcon /> }}
-            sx={{ width: 300 }}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setCurrentUser({ email: '', password: '', role: 'employee' });
-              setOpenDialog(true);
-            }}
-          >
-            Nuevo Usuario
-          </Button>
-        </Box>
-
-        
-
         {/* Tabla de registros de asistencia */}
         <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>

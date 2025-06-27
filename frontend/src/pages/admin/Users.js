@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Chip, Button, CircularProgress, Alert, TextField, Dialog, DialogActions,
-  DialogContent, DialogTitle, MenuItem, Select, InputLabel, FormControl, Typography, AppBar, Toolbar} from '@mui/material';
+  DialogContent, DialogTitle, MenuItem, Select, InputLabel, FormControl, Typography, AppBar, Toolbar
+} from '@mui/material';
 import {
   Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Search as SearchIcon
 } from '@mui/icons-material';
@@ -11,6 +12,8 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import UserBar from '../../components/UserBar';
+import Container from '@mui/material/Container';
+
 
 
 const Users = () => {
@@ -28,6 +31,7 @@ const Users = () => {
     fetchSubRoles();
   }, []);
 
+  
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -104,7 +108,7 @@ const Users = () => {
     <>
       {/* Menú de navegación */}
       <UserBar />
-      <Box sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
           Gestión de Usuarios
         </Typography>
@@ -115,29 +119,29 @@ const Users = () => {
           </Alert>
         )}
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-          <TextField
-            variant="outlined"
-            placeholder="Buscar usuarios..."
-            size="small"
-            InputProps={{ startAdornment: <SearchIcon /> }}
-            sx={{ width: 300 }}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setCurrentUser({ email: '', password: '', role: 'employee' });
-              setOpenDialog(true);
-            }}
-          >
-            Nuevo Usuario
-          </Button>
-        </Box>
+        <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+            <TextField
+              variant="outlined"
+              placeholder="Buscar usuarios..."
+              size="small"
+              InputProps={{ startAdornment: <SearchIcon /> }}
+              sx={{ width: 300 }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setCurrentUser({ email: '', password: '', role: 'employee' });
+                setOpenDialog(true);
+              }}
+            >
+              Nuevo Usuario
+            </Button>
+          </Box>
 
-        <Paper elevation={3} sx={{ p: 2 }}>
           {loading ? (
             <Box display="flex" justifyContent="center" py={4}>
               <CircularProgress />
@@ -208,6 +212,7 @@ const Users = () => {
           )}
         </Paper>
 
+        {/* Dialog de usuario */}
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>
             {currentUser?._id ? 'Editar Usuario' : 'Nuevo Usuario'}
@@ -277,7 +282,7 @@ const Users = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
+      </Container>
     </>
   );
 };
