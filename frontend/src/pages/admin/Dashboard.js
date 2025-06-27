@@ -76,7 +76,7 @@ const AdminDashboard = () => {
   const [startDate, setStartDate] = useState(todayStr);      // Para "Registros de Asistencia"
   const [endDate, setEndDate] = useState('');                // Puedes dejar vacío o también preseteado
   const [dateFilter, setDateFilter] = useState(todayStr);    // Para "Tiempos de Asistencia por Usuario"
-
+  const [dateFilterTo, setDateFilterTo] = useState(todayStr); // Fecha hasta
 
 
 
@@ -290,7 +290,8 @@ const AdminDashboard = () => {
 
       // Aplica filtros
       if (userFilter && userId !== userFilter) return;
-      if (dateFilter && fecha !== dateFilter) return;
+      if (dateFilter && fecha < dateFilter) return;
+      if (dateFilterTo && fecha > dateFilterTo) return;
 
       const key = `${userId}-${fecha}`;
       if (!agrupados[key]) {
@@ -335,19 +336,6 @@ const AdminDashboard = () => {
 
   return (
     <>
-      {/* <AppBar position="static" sx={{ mb: 4 }}>
-        <Toolbar>
-          <Button color="inherit" component={Link} to="/admin/dashboard">
-            Dashboard
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/users">
-            Usuarios
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/subroles">
-            SubRoles
-          </Button>
-        </Toolbar>
-      </AppBar> */}
       <UserBar />
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
@@ -451,7 +439,7 @@ const AdminDashboard = () => {
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <TextField
-              label="Desde"
+              label="Fecha desde"
               type="date"
               size="small"
               value={startDate}
@@ -459,7 +447,7 @@ const AdminDashboard = () => {
               InputLabelProps={{ shrink: true }}
             />
             <TextField
-              label="Hasta"
+              label="Fecha hasta"
               type="date"
               size="small"
               value={endDate}
@@ -508,6 +496,22 @@ const AdminDashboard = () => {
           </Typography>
           {/* Filtros */}
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <TextField
+              label="Fecha desde"
+              type="date"
+              size="small"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Fecha hasta"
+              type="date"
+              size="small"
+              value={dateFilterTo}
+              onChange={(e) => setDateFilterTo(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>Usuario</InputLabel>
               <Select
@@ -523,14 +527,6 @@ const AdminDashboard = () => {
                 ))}
               </Select>
             </FormControl>
-            <TextField
-              label="Fecha"
-              type="date"
-              size="small"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-            />
             <Button variant="contained" color="success" onClick={exportTiemposToExcel}>
               Exportar a Excel
             </Button>
