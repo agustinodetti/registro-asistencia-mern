@@ -6,7 +6,7 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Ruta de Login
+// Ruta de Login (POST /api/auth/login)
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 

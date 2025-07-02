@@ -209,9 +209,9 @@ const AdminDashboard = () => {
   };
 
   const filteredAttendance = attendanceRecords.filter(record => {
-    const recordDate = new Date(record.timestamp || record.createdAt);
-    const from = startDate ? new Date(startDate) : null;
-    const to = endDate ? new Date(endDate) : null;
+    const recordDate = getLocalDateString(record.timestamp || record.createdAt);
+    const from = startDate ? startDate : null;
+    const to = endDate ? endDate : null;
 
     if (from && recordDate < from) return false;
     if (to && recordDate > to) return false;
