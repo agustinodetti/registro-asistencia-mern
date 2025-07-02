@@ -7,7 +7,7 @@ const PrivateRoute = ({ allowedRoles }) => {
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate('/login');
+      navigate('/login', { replace: true });
       return;
     }
 

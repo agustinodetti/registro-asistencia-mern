@@ -278,6 +278,12 @@ const AdminDashboard = () => {
     saveAs(file, 'liquidacion_asistencia.xlsx');
   };
 
+  function getLocalDateString(date) {
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
+  }
+
   // Calcular tiempos de asistencia por usuario y fecha
   function calcularTiempos(records) {
     // Agrupa por usuario y fecha
@@ -286,18 +292,44 @@ const AdminDashboard = () => {
     records.forEach((rec) => {
       if (!rec.user) return;
       const userId = rec.user._id || rec.user;
-      const fecha = new Date(rec.timestamp || rec.createdAt).toISOString().slice(0, 10);
+
+      // Solo usar la fecha del registro de entrada para agrupar
+      let fechaClave;
+      if (rec.type === 'in' || rec.type === 'entrada') {
+        //fechaClave = new Date(rec.timestamp || rec.createdAt);
+        fechaClave = getLocalDateString(rec.timestamp || rec.createdAt);
+
+      } else if (rec.type === 'out' || rec.type === 'salida') {
+        // Busca si ya existe un 'in' para ese usuario ese día
+        // Si no existe, usa la fecha del registro de salida (caso raro)
+        fechaClave = null;
+        const inRecord = records.find(r =>
+          (r.user._id || r.user) === userId &&
+          (r.type === 'in' || r.type === 'entrada') &&
+          //new Date(r.timestamp || r.createdAt).toISOString().slice(0, 10) === new Date(rec.timestamp || rec.createdAt).toISOString().slice(0, 10)
+          getLocalDateString(r.timestamp || r.createdAt) === getLocalDateString(rec.timestamp || rec.createdAt)
+        );
+        if (inRecord) {
+          //fechaClave = new Date(inRecord.timestamp || inRecord.createdAt).toISOString().slice(0, 10);
+          fechaClave = getLocalDateString(inRecord.timestamp || inRecord.createdAt);
+
+        } else {
+          fechaClave = getLocalDateString(rec.timestamp || rec.createdAt);
+        }
+      }
+
+      if (!fechaClave) return;
 
       // Aplica filtros
       if (userFilter && userId !== userFilter) return;
-      if (dateFilter && fecha < dateFilter) return;
-      if (dateFilterTo && fecha > dateFilterTo) return;
+      if (dateFilter && fechaClave < dateFilter) return;
+      if (dateFilterTo && fechaClave > dateFilterTo) return;
 
-      const key = `${userId}-${fecha}`;
+      const key = `${userId}-${fechaClave}`;
       if (!agrupados[key]) {
         agrupados[key] = {
           user: rec.user,
-          fecha,
+          fecha: fechaClave,
           in: null,
           out: null
         };
