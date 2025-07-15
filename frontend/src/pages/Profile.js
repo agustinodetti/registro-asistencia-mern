@@ -3,6 +3,7 @@ import { TextField, Button, Container, Typography, Box, Alert } from '@mui/mater
 import axios from 'axios';
 import UserBar from '../components/UserBar';
 
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Profile = () => {
   const [form, setForm] = useState({

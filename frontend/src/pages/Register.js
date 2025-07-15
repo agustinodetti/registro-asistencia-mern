@@ -18,6 +18,7 @@ import { HowToReg as RegisterIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
 const Register = () => {
   const [formData, setFormData] = useState({
     email: '',

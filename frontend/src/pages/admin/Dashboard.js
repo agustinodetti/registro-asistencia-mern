@@ -48,7 +48,7 @@ import { saveAs } from 'file-saver';
 import UserBar from '../../components/UserBar';
 
 const todayStr = new Date().toISOString().slice(0, 10);
-
+const API_URL = process.env.REACT_APP_API_URL;
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({

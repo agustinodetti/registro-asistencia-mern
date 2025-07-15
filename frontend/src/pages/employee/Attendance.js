@@ -27,7 +27,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import UserBar from '../../components/UserBar';
 
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Attendance = () => {
   const [records, setRecords] = useState([]);
   const [notes, setNotes] = useState('');

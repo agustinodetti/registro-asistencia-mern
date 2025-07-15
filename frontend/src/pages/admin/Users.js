@@ -15,7 +15,7 @@ import UserBar from '../../components/UserBar';
 import Container from '@mui/material/Container';
 
 
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Users = () => {
   // Estados y funciones relacionados con usuarios
   const [users, setUsers] = useState([]);
