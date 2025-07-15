@@ -3,8 +3,8 @@ const Attendance = require('../models/Attendance');
 const User = require('../models/User');
 
 function startAutoOutJob() {
-    // Tarea diaria a las 12:35
-    cron.schedule('35 12 * * *', async () => {
+    // Tarea diaria a las 23:00
+    cron.schedule('00 23 * * *', async () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
