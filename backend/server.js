@@ -7,7 +7,9 @@ const User = require('./models/User');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://registro-asistencia-front-tau.vercel.app/'
+}));
 app.use(express.json());
 
 const attendanceRoutes = require('./routes/attendance');

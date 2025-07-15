@@ -39,7 +39,7 @@ const Attendance = () => {
   const fetchRecords = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/attendance/history', {
+      const res = await axios.get(`${API_URL}/api/attendance/history`, {
         headers: { 'x-auth-token': token }
       });
       setRecords(res.data);
@@ -57,7 +57,7 @@ const Attendance = () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.post(
-        'http://localhost:5000/api/attendance/register',
+        `${API_URL}/api/attendance/register`,
         { type, notes },
         { headers: { 'x-auth-token': token } }
       );

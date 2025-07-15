@@ -87,7 +87,7 @@ const AdminDashboard = () => {
     fetchStats();
     const fetchAttendance = async () => {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/admin/attendance', {
+      const res = await axios.get(`${API_URL}/api/admin/attendance`, {
         headers: { 'x-auth-token': token }
       });
       setAttendanceRecords(res.data);
@@ -96,7 +96,7 @@ const AdminDashboard = () => {
     const fetchSubRoles = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/subroles', {
+        const res = await axios.get(`${API_URL}/api/subroles`, {
           headers: { 'x-auth-token': token }
         });
         setSubRoles(res.data);
@@ -137,7 +137,7 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/admin/users', {
+      const res = await axios.get(`${API_URL}/api/admin/users`, {
         headers: { 'x-auth-token': token }
       });
       setUsers(res.data);
@@ -153,7 +153,7 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/admin/stats', {
+      const res = await axios.get(`${API_URL}/api/admin/stats`, {
         headers: { 'x-auth-token': token }
       });
       setAttendanceStats(res.data);
@@ -167,8 +167,8 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       const url = currentUser?._id
-        ? `http://localhost:5000/api/admin/users/${currentUser._id}`
-        : 'http://localhost:5000/api/admin/users';
+        ? `${API_URL}/api/admin/users/${currentUser._id}`
+        : `${API_URL}/api/admin/users`;
 
       const method = currentUser?._id ? 'put' : 'post';
 
@@ -199,7 +199,7 @@ const AdminDashboard = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/users/${user}`, {
+      await axios.delete(`${API_URL}/api/admin/users/${user}`, {
         headers: { 'x-auth-token': token }
       });
       fetchUsers();
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
     const recordDate = getLocalDateString(record.timestamp || record.createdAt);
     const from = startDate ? startDate : null;
     const to = endDate ? endDate : null;
-
+    
     if (from && recordDate < from) return false;
     if (to && recordDate > to) return false;
     return true;

@@ -57,7 +57,7 @@ const [searchTerm, setSearchTerm] = useState('');
     setError('');
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/subroles', {
+      const res = await axios.get(`${API_URL}/api/subroles`, {
         headers: { 'x-auth-token': token }
       });
       setSubRoles(res.data);
@@ -90,21 +90,21 @@ const [searchTerm, setSearchTerm] = useState('');
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
     if (editing) {
-      await axios.put(`http://localhost:5000/api/subroles/${editing._id}`, form, {
+      await axios.put(`${API_URL}/api/subroles/${editing._id}`, form, {
         headers: { 'x-auth-token': token }
       });
     } else {
-      await axios.post('http://localhost:5000/api/subroles', form, {
+      await axios.post(`${API_URL}/api/subroles`, form, {
         headers: { 'x-auth-token': token }
       });
     }
-    fetchSubRoles();
+    fetchSubRoles(); 
     handleClose();
   };
 
   const handleDelete = async (id) => {
     const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:5000/api/subroles/${id}`, {
+    await axios.delete(`${API_URL}/api/subroles/${id}`, {
       headers: { 'x-auth-token': token }
     });
     fetchSubRoles();

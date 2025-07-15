@@ -18,7 +18,7 @@ const Profile = () => {
     // Cargar datos actuales del usuario
     const fetchProfile = async () => {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/auth/me', {
+      const res = await axios.get(`${API_URL}/api/auth/me`, {
         headers: { 'x-auth-token': token }
       });
       setForm({
@@ -41,7 +41,7 @@ const Profile = () => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:5000/api/profile', {
+      await axios.put(`${API_URL}/api/profile`, {
         firstName: form.firstName,
         lastName: form.lastName,
         password: form.password ? form.password : undefined
