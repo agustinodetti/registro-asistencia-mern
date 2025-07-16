@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: 'https://registro-asistencia-mern.onrender.com/'
+  origin: 'https://registro-asistencia-mern.onrender.com'
 }));
 app.use(express.json());
 
