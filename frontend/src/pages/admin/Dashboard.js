@@ -304,6 +304,7 @@ const AdminDashboard = () => {
         // Si no existe, usa la fecha del registro de salida (caso raro)
         fechaClave = null;
         const inRecord = records.find(r =>
+          r.user && // <-- verifica que r.user exista
           (r.user._id || r.user) === userId &&
           (r.type === 'in' || r.type === 'entrada') &&
           //new Date(r.timestamp || r.createdAt).toISOString().slice(0, 10) === new Date(rec.timestamp || rec.createdAt).toISOString().slice(0, 10)
