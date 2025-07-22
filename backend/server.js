@@ -14,6 +14,9 @@ app.use(express.json());
 
 const attendanceRoutes = require('./routes/attendance');
 
+const startAutoOutJob = require('./utils/autoOutJob');
+startAutoOutJob();
+
 app.use('/api/attendance', attendanceRoutes);
 
 const authRoutes = require('./routes/auth');
