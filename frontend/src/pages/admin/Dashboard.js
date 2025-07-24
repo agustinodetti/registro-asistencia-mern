@@ -284,6 +284,21 @@ const AdminDashboard = () => {
     return d.toISOString().slice(0, 10);
   }
 
+  // Eliminar registro de asistencia
+  const handleDeleteAttendance = async (attendanceId) => {
+    if (!window.confirm('¿Estás seguro de eliminar este registro de asistencia?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/api/admin/attendance/${attendanceId}`, {
+        headers: { 'x-auth-token': token }
+      });
+      // Actualiza la lista después de eliminar
+      setAttendanceRecords(prev => prev.filter(r => r._id !== attendanceId));
+    } catch (err) {
+      setError('Error al eliminar el registro de asistencia');
+    }
+  };
+
   // Calcular tiempos de asistencia por usuario y fecha
   function calcularTiempos(records) {
     // Agrupa por usuario y fecha
@@ -304,6 +319,7 @@ const AdminDashboard = () => {
         // Si no existe, usa la fecha del registro de salida (caso raro)
         fechaClave = null;
         const inRecord = records.find(r =>
+          r.user && // <-- verifica que r.user exista
           (r.user._id || r.user) === userId &&
           (r.type === 'in' || r.type === 'entrada') &&
           //new Date(r.timestamp || r.createdAt).toISOString().slice(0, 10) === new Date(rec.timestamp || rec.createdAt).toISOString().slice(0, 10)
@@ -473,6 +489,7 @@ const AdminDashboard = () => {
                   <TableCell>Tipo</TableCell>
                   <TableCell>Notas</TableCell>
                   <TableCell>Fecha</TableCell>
+                  <TableCell>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -489,6 +506,15 @@ const AdminDashboard = () => {
                       {record.timestamp
                         ? new Date(record.timestamp).toLocaleString()
                         : (record.createdAt ? new Date(record.createdAt).toLocaleString() : 'Sin fecha')}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        color="error"
+                        size="small"
+                        onClick={() => handleDeleteAttendance(record._id)}
+                      >
+                        Eliminar
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

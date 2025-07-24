@@ -45,4 +45,17 @@ router.get('/history', auth, async (req, res) => {
   }
 });
 
+// DELETE /api/attendance/:id - Eliminar un registro de asistencia por ID (solo admin)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const deleted = await Attendance.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Registro no encontrado' });
+    }
+    res.json({ message: 'Registro eliminado correctamente' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error al eliminar el registro' });
+  }
+});
+
 module.exports = router;
