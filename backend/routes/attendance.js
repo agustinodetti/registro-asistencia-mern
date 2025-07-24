@@ -1,5 +1,5 @@
 const express = require('express');
-const { auth } = require('../middleware/auth');
+const { auth, isAdmin } = require('../middleware/auth');
 const Attendance = require('../models/Attendance');
 const router = express.Router();
 
@@ -46,7 +46,7 @@ router.get('/history', auth, async (req, res) => {
 });
 
 // DELETE /api/attendance/:id - Eliminar un registro de asistencia por ID (solo admin)
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, isAdmin, async (req, res) => {
   try {
     const deleted = await Attendance.findByIdAndDelete(req.params.id);
     if (!deleted) {

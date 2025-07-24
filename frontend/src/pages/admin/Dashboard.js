@@ -289,7 +289,7 @@ const AdminDashboard = () => {
     if (!window.confirm('¿Estás seguro de eliminar este registro de asistencia?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/admin/attendance/${attendanceId}`, {
+      await axios.delete(`http://localhost:5000/api/attendance/${attendanceId}`, {
         headers: { 'x-auth-token': token }
       });
       // Actualiza la lista después de eliminar
