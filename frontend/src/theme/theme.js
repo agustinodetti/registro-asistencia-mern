@@ -8,6 +8,9 @@ const theme = createTheme({
     secondary: {
       main: '#b4195aff', // Rosa fuerte
     },
+    terciary: {
+      main: '#ffffffff', // Blanco
+    },
   },
   typography: {
     fontFamily: 'Roboto, sans-serif',
