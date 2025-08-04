@@ -1,23 +1,31 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Button, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+} from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles'; // 👈 acceso al theme
 
 const UserBar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme(); // 👈 usamos el theme
 
-  // Obtén el rol del usuario desde localStorage
   const role = localStorage.getItem('role');
-
 
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
   const handleEditProfile = () => {
     setAnchorEl(null);
-    navigate('/profile'); 
+    navigate('/profile');
   };
 
   const handleLogout = () => {
@@ -27,44 +35,111 @@ const UserBar = () => {
     navigate('/login');
   };
 
-  // Oculta los links de admin si estamos en la página de asistencia de empleado
-  const isEmployeeAttendance = location.pathname === '/employee/attendance' || location.pathname === '/profile' || location.pathname.startsWith('/admin/attendance');
+  const isEmployeeAttendance =
+    location.pathname === '/employee/attendance' ||
+    location.pathname === '/profile' ||
+    location.pathname.startsWith('/admin/attendance');
 
   return (
-    <AppBar position="static" sx={{ mb: 4 }}>
+    <AppBar
+      position="static"
+      sx={{
+        mb: 4,
+        background: theme.palette.primary.main,
+        boxShadow: '0 4px 10px rgba(179, 1, 90, 0.79)',
+        borderRadius: 2,
+      }}
+    >
       <Toolbar>
-        {role === 'admin' && (
+        {role === 'admin' && !isEmployeeAttendance && (
           <>
-            <Button color="inherit" component={Link} to="/admin/dashboard">
+            <Button
+              component={Link}
+              to="/admin/dashboard"
+              sx={{
+                color: theme.palette.terciary.main,
+                fontWeight: 500,
+                '&:hover': {
+                  color: theme.palette.terciary.light,
+                },
+              }}
+            >
               Dashboard
             </Button>
-            <Button color="inherit" component={Link} to="/admin/users">
+            <Button
+              component={Link}
+              to="/admin/users"
+              sx={{
+                color: theme.palette.terciary.main,
+                fontWeight: 500,
+                '&:hover': {
+                  color: theme.palette.terciary.light,
+                },
+              }}
+            >
               Usuarios
             </Button>
-            <Button color="inherit" component={Link} to="/admin/subroles">
+            <Button
+              component={Link}
+              to="/admin/subroles"
+              sx={{
+                color: theme.palette.terciary.main,
+                fontWeight: 500,
+                '&:hover': {
+                  color: theme.palette.terciary.light,
+                },
+              }}
+            >
               SubRoles
             </Button>
           </>
         )}
+
         {role === 'employee' && (
-          <>
-            <Button color="inherit" component={Link} to="/employee/attendance">
-              Registro asistencia
-            </Button>
-          </>
+          <Button
+            component={Link}
+            to="/employee/attendance"
+            sx={{
+              color: theme.palette.terciary.main,
+              fontWeight: 500,
+              '&:hover': {
+                color: theme.palette.terciary.light,
+              },
+            }}
+          >
+            Registro asistencia
+          </Button>
         )}
+
         <div style={{ flexGrow: 1 }} />
+
         <Tooltip title="Cuenta">
-          <IconButton color="inherit" onClick={handleMenuOpen} size="large">
+          <IconButton
+            onClick={handleMenuOpen}
+            size="large"
+            sx={{
+              color: theme.palette.terciary.main,
+              '&:hover': {
+                color: theme.palette.terciary.light,
+              },
+            }}
+          >
             <AccountCircleIcon />
           </IconButton>
         </Tooltip>
+
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          sx={{
+            '& .MuiPaper-root': {
+              borderRadius: 2,
+              boxShadow: '0 4px 12px rgba(137, 33, 33, 0.15)',
+            },
+          }}
         >
           <MenuItem onClick={handleEditProfile}>Editar perfil</MenuItem>
           <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
