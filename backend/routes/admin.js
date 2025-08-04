@@ -17,11 +17,13 @@ router.get('/users', auth, isAdmin, async (req, res) => {
 // GET /api/admin/stats - Estadísticas
 router.get('/stats', auth, isAdmin, async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
+    //const totalUsers = await User.countDocuments();
     const todayStart = new Date().setHours(0, 0, 0, 0);
 
     const stats = {
-      totalUsers,
+      totalUsers: await User.countDocuments({ 
+        role: 'employee'
+      }),
       presentToday: await Attendance.countDocuments({ 
         type: 'in', 
         timestamp: { $gte: todayStart } 

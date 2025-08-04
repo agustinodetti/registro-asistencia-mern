@@ -7,10 +7,16 @@ const User = require('./models/User');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ['https://registro-asistencia-mern.onrender.com', 
+    'http://localhost:3000']
+}));
 app.use(express.json());
 
 const attendanceRoutes = require('./routes/attendance');
+
+const startAutoOutJob = require('./utils/autoOutJob');
+startAutoOutJob();
 
 app.use('/api/attendance', attendanceRoutes);
 
