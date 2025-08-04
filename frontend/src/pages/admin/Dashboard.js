@@ -286,7 +286,6 @@ const AdminDashboard = () => {
 
   // Eliminar registro de asistencia
   const handleDeleteAttendance = async (attendanceId) => {
-
   if (!window.confirm('¿Estás seguro de eliminar este registro de asistencia?')) return;
   try {
     const token = localStorage.getItem('token');
