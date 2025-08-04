@@ -405,7 +405,7 @@ const AdminDashboard = () => {
                   <UsersIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
                   <Box>
                     <Typography variant="h6">Usuarios</Typography>
-                    <Typography variant="h4">{attendanceData.totalEmployees}</Typography>
+                    <Typography variant="h4">{attendanceStats.totalUsers}</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -419,7 +419,7 @@ const AdminDashboard = () => {
                   <AttendanceIcon color="success" sx={{ fontSize: 40, mr: 2 }} />
                   <Box>
                     <Typography variant="h6">Presentes Hoy</Typography>
-                    <Typography variant="h4">{attendanceData.presentToday}</Typography>
+                    <Typography variant="h4">{attendanceStats.presentToday}</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -433,7 +433,7 @@ const AdminDashboard = () => {
                   <AttendanceIcon color="warning" sx={{ fontSize: 40, mr: 2 }} />
                   <Box>
                     <Typography variant="h6">Tardanzas Hoy</Typography>
-                    <Typography variant="h4">{attendanceData.lateToday}</Typography>
+                    <Typography variant="h4">{attendanceStats.lateToday}</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -447,7 +447,7 @@ const AdminDashboard = () => {
                   <AttendanceIcon color="error" sx={{ fontSize: 40, mr: 2 }} />
                   <Box>
                     <Typography variant="h6">Ausentes Hoy</Typography>
-                    <Typography variant="h4">{attendanceData.absentToday}</Typography>
+                    <Typography variant="h4">{(attendanceStats.totalUsers || 0)-(attendanceStats.presentToday || 0)-(attendanceStats.lateToday || 0)}</Typography>
                   </Box>
                 </Box>
               </CardContent>
