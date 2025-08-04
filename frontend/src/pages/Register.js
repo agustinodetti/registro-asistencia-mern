@@ -18,6 +18,7 @@ import { HowToReg as RegisterIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
 const Register = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -42,7 +43,7 @@ const Register = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', data);
+      const response = await axios.post(`${API_URL}/api/auth/register`, data);
       
       if (response.data.token) {
         setSuccess(true);

@@ -15,6 +15,7 @@ import { LockOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 
+const API_URL = process.env.REACT_APP_API_URL;
 const Login = () => {
   const theme = useTheme();
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ const Login = () => {
   e.preventDefault();
   
   try {
-    const response = await axios.post('http://localhost:5000/api/auth/login', {
+    const response = await axios.post(`${API_URL}/api/auth/login`, {
       email,
       password
     });
