@@ -15,7 +15,7 @@ import UserBar from '../../components/UserBar';
 import Container from '@mui/material/Container';
 
 
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Users = () => {
   // Estados y funciones relacionados con usuarios
   const [users, setUsers] = useState([]);
@@ -35,7 +35,7 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/admin/users', {
+      const res = await axios.get(`${API_URL}/api/admin/users`, {
         headers: { 'x-auth-token': token }
       });
       setUsers(res.data);
@@ -49,7 +49,7 @@ const Users = () => {
   const fetchSubRoles = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/subroles', {
+      const res = await axios.get(`${API_URL}/api/subroles`, {
         headers: { 'x-auth-token': token }
       });
       setSubRoles(res.data);
@@ -62,8 +62,8 @@ const Users = () => {
     try {
       const token = localStorage.getItem('token');
       const url = currentUser?._id
-        ? `http://localhost:5000/api/admin/users/${currentUser._id}`
-        : 'http://localhost:5000/api/admin/users';
+        ? `${API_URL}/api/admin/users/${currentUser._id}`
+        : `${API_URL}/api/admin/users`;
       const method = currentUser?._id ? 'put' : 'post';
 
       const userData = {
@@ -90,7 +90,7 @@ const Users = () => {
     if (!window.confirm('¿Estás seguro de eliminar este usuario?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/users/${user}`, {
+      await axios.delete(`${API_URL}/api/admin/users/${user}`, {
         headers: { 'x-auth-token': token }
       });
       fetchUsers();
