@@ -17,9 +17,12 @@ import {
 import { HowToReg as RegisterIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useTheme } from '@mui/material/styles';
+
 
 const API_URL = process.env.REACT_APP_API_URL;
 const Register = () => {
+  const theme = useTheme();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -57,6 +60,16 @@ const Register = () => {
   };
 
   return (
+    <Box
+          sx={{
+            minHeight: '100vh',
+            width: '100vw',
+            background: theme.customBackground.login, // Fondo de toda la página
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
     <Container component="main" maxWidth="xs">
       <Box
         sx={{
@@ -159,6 +172,7 @@ const Register = () => {
         </Box>
       </Box>
     </Container>
+    </Box>
   );
 };
 

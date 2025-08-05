@@ -15,6 +15,9 @@ const theme = createTheme({
   typography: {
     fontFamily: 'Roboto, sans-serif',
   },
+  customBackground: {
+    login: '#2b1f61ff',   
+  }
 });
 
 export default theme;
