@@ -47,7 +47,7 @@ const UserBar = () => {
         mb: 4,
         background: theme.palette.primary.main,
         boxShadow: '0 4px 10px rgba(179, 1, 90, 0.79)',
-        borderRadius: 2,
+        //borderRadius: 2,
       }}
     >
       <Toolbar>
