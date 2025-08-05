@@ -83,10 +83,10 @@ const Register = () => {
           boxShadow: 3
         }}
       >
-        <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+        <Avatar sx={{ m: 1, bgcolor: theme.palette.secondary.main  }}>
           <RegisterIcon />
         </Avatar>
-        <Typography component="h1" variant="h5">
+        <Typography component="h1" variant="h5" sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>
           Crear Cuenta
         </Typography>
 
@@ -158,14 +158,24 @@ const Register = () => {
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{
+              mt: 3,
+              mb: 2,
+              py: 1.5,
+              fontWeight: 'bold',
+                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              color: theme.palette.primary.contrastText,
+              '&:hover': {
+                background: `linear-gradient(45deg, ${theme.palette.primary.dark || '#0b1723'}, ${theme.palette.secondary.dark || '#e04385'})`,
+              },
+            }}
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : null}
           >
             {loading ? 'Registrando...' : 'Registrarse'}
           </Button>
           <Box textAlign="center">
-            <Link href="/login" variant="body2">
+            <Link href="/login" variant="body2" color="secondary">
               ¿Ya tienes cuenta? Inicia Sesión
             </Link>
           </Box>
