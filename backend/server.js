@@ -7,10 +7,30 @@ const User = require('./models/User');
 require('dotenv').config();
 
 const app = express();
+
+// CORS FUNCIONANDO 
+// app.use(cors({
+//   origin: ['https://registro-asistencia-mern.onrender.com', 
+//     'http://localhost:5000']
+// }));
+
+// CORS FUNCIONANDO + NUEVA CONFIG PARA PERMITIR ORÍGENES ESPECÍFICOS.
+const allowedOrigins = [
+  'https://registro-asistencia-mern.onrender.com',
+  'http://localhost:3000'
+];
+
 app.use(cors({
-  origin: ['https://registro-asistencia-mern.onrender.com', 
-    'http://localhost:3000']
+  origin: function (origin, callback) {
+    console.log('Solicitud desde:', origin); // 👈 importante para el test
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Origen no permitido por CORS'));
+    }
+  }
 }));
+
 app.use(express.json());
 
 const attendanceRoutes = require('./routes/attendance');
