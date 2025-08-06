@@ -156,7 +156,7 @@ const Users = () => {
                     <TableCell>Apellido</TableCell>
                     <TableCell>SubRol</TableCell>
                     <TableCell>Rol</TableCell>
-                    <TableCell>Último Acceso</TableCell>
+                    {/* <TableCell>Último Acceso</TableCell> */}
                     <TableCell>Acciones</TableCell>
                   </TableRow>
                 </TableHead>
@@ -177,11 +177,11 @@ const Users = () => {
                           color={user.role === 'admin' ? 'primary' : 'default'}
                         />
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         {user.lastLogin
                           ? format(new Date(user.lastLogin), 'PPPpp', { locale: es })
                           : 'Nunca'}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <Button
                           size="small"
@@ -262,7 +262,7 @@ const Users = () => {
               <FormControl fullWidth margin="normal">
                 <InputLabel>SubRol</InputLabel>
                 <Select
-                  value={currentUser?.subRole || ''}
+                  value={currentUser?.subRole?._id || ''}
                   label="SubRol"
                   onChange={(e) => setCurrentUser({ ...currentUser, subRole: e.target.value })}
                 >
