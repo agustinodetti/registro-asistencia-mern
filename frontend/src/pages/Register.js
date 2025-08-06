@@ -64,7 +64,7 @@ const Register = () => {
           sx={{
             minHeight: '100vh',
             width: '100vw',
-            background: theme.customBackground.login, // Fondo de toda la página
+            background: theme.palette.primary.main, // Fondo de toda la página
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
