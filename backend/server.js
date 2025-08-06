@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cron = require('node-cron');
 const Attendance = require('./models/Attendance');
+const path = require('path');
 const User = require('./models/User');
 require('dotenv').config();
 
@@ -45,6 +46,18 @@ mongoose.connect(process.env.MONGODB_URI)
 app.get('/', (req, res) => {
   res.send('API funcionando!');
 });
+
+// --- SERVIR LOS ARCHIVOS ESTÁTICOS DE REACT ---
+if (process.env.NODE_ENV === 'production') {
+  // Sirve los archivos estáticos desde la carpeta "build" cuando esté en producción
+  app.use(express.static(path.join(__dirname, 'build')));
+
+  // Redirigir todas las rutas a index.html para que React maneje la navegación
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  });
+}
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
