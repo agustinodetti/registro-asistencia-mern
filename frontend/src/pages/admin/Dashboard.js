@@ -73,12 +73,10 @@ const AdminDashboard = () => {
   //const [dateFilter, setDateFilter] = useState('');
 
   // Presetea los filtros de fecha con la fecha actual
-  const [startDate, setStartDate] = useState(todayStr);      // Para "Registros de Asistencia"
-  const [endDate, setEndDate] = useState('');                // Puedes dejar vacío o también preseteado
-  const [dateFilter, setDateFilter] = useState(todayStr);    // Para "Tiempos de Asistencia por Usuario"
-  const [dateFilterTo, setDateFilterTo] = useState(todayStr); // Fecha hasta
-
-
+  const [startDate, setStartDate] = useState(getLocalDateString(new Date()));         // Para "Registros de Asistencia"
+  const [endDate, setEndDate] = useState('');                                         // Puedes dejar vacío o también preseteado
+  const [dateFilter, setDateFilter] = useState(getLocalDateString(new Date()));       // Para "Tiempos de Asistencia por Usuario"
+  const [dateFilterTo, setDateFilterTo] = useState(getLocalDateString(new Date()));   // Fecha hasta
 
 
   // Cargar datos al montar el componente
