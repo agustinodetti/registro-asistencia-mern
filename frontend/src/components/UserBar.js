@@ -37,7 +37,6 @@ const UserBar = () => {
 
   const isEmployeeAttendance =
     location.pathname === '/employee/attendance' ||
-    location.pathname === '/profile' ||
     location.pathname.startsWith('/admin/attendance');
 
   return (
