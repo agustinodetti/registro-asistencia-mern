@@ -12,7 +12,7 @@ import {
   CssBaseline
 } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -129,7 +129,7 @@ const Login = () => {
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link href="/register" variant="body2" color="secondary">
+              <Link component={RouterLink} to="/register" variant="body2" color="secondary">
                 ¿No tienes cuenta? Regístrate
               </Link>
             </Grid>

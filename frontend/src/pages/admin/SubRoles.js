@@ -42,12 +42,12 @@ import UserBar from '../../components/UserBar';
 
 const API_URL = process.env.REACT_APP_API_URL;
 const SubRoles = () => {
+  const [error, setError] = useState('');
   const [subRoles, setSubRoles] = useState([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ description: '', price: '' });
 const [loading, setLoading] = useState(false);
-const [error, setError] = useState('');
 const [searchTerm, setSearchTerm] = useState('');
 
 
@@ -90,24 +90,42 @@ const [searchTerm, setSearchTerm] = useState('');
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
     if (editing) {
-      await axios.put(`${API_URL}/api/subroles/${editing._id}`, form, {
-        headers: { 'x-auth-token': token }
-      });
+      try {
+        await axios.put(`${API_URL}/api/subroles/${editing._id}`, form, {
+          headers: { 'x-auth-token': token }
+        });
+      }
+      catch (err) {
+        setError('Error al registrar operacion');
+      }
+
     } else {
-      await axios.post(`${API_URL}/api/subroles`, form, {
-        headers: { 'x-auth-token': token }
-      });
+      try {
+        await axios.post(`${API_URL}/api/subroles`, form, {
+          headers: { 'x-auth-token': token }
+        });
+      }
+      catch (err) {
+        setError('Error al registrar operacion');
+      }
     }
-    fetchSubRoles(); 
+    fetchSubRoles();
     handleClose();
   };
-
+  
   const handleDelete = async (id) => {
-    const token = localStorage.getItem('token');
-    await axios.delete(`${API_URL}/api/subroles/${id}`, {
-      headers: { 'x-auth-token': token }
-    });
-    fetchSubRoles();
+    if (!window.confirm("¿Estás seguro de eliminar este subrol?")) return;
+    try {
+
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/api/subroles/${id}`, {
+        headers: { 'x-auth-token': token }
+      });
+      fetchSubRoles();
+    }
+    catch (err) {
+      setError('Error al eliminar subrol');
+    }
   };
 
   return (

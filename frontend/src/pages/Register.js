@@ -15,7 +15,7 @@ import {
   Link
 } from '@mui/material';
 import { HowToReg as RegisterIcon } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 
@@ -175,7 +175,7 @@ const Register = () => {
             {loading ? 'Registrando...' : 'Registrarse'}
           </Button>
           <Box textAlign="center">
-            <Link href="/login" variant="body2" color="secondary">
+            <Link component={RouterLink} to="/login" variant="body2" color="secondary">
               ¿Ya tienes cuenta? Inicia Sesión
             </Link>
           </Box>
