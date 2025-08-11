@@ -298,6 +298,24 @@ const AdminDashboard = () => {
   }
 };
 
+  // Registrar salida basada en un registro de entrada
+  const handleRegisterOut = async (inRecord) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(
+        `${API_URL}/api/attendance/admin/${inRecord._id}/out`,
+        { notes: 'Salida registrada manualmente por admin' },
+        { headers: { 'x-auth-token': token } }
+      );
+      const newOut = res.data;
+
+      // Inserta el nuevo registro en la lista para que aparezca en la grilla sin recargar
+      setAttendanceRecords((prev) => [newOut, ...prev]);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al registrar salida');
+    }
+  };
+
   // Calcular tiempos de asistencia por usuario y fecha
   function calcularTiempos(records) {
     // Agrupa por usuario y fecha
@@ -507,6 +525,17 @@ const AdminDashboard = () => {
                         : (record.createdAt ? new Date(record.createdAt).toLocaleString() : 'Sin fecha')}
                     </TableCell>
                     <TableCell>
+                      {record.type === 'in' && (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          sx={{ mr: 1 }}
+                          onClick={() => handleRegisterOut(record)}
+                        >
+                          Registrar salida
+                        </Button>
+                      )}
                       <Button
                         color="error"
                         size="small"

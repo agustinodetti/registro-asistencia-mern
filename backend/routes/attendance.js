@@ -58,4 +58,46 @@ router.delete('/:id', auth, isAdmin, async (req, res) => {
   }
 });
 
+// POST /api/attendance/admin/:inId/out - Registrar salida basada en un registro de entrada (solo admin)
+router.post('/admin/:inId/out', auth, isAdmin, async (req, res) => {
+  try {
+    const { inId } = req.params;
+    const { notes } = req.body || {};
+
+    const inRecord = await Attendance.findById(inId);
+    if (!inRecord) {
+      return res.status(404).json({ message: 'Registro de entrada no encontrado' });
+    }
+    if (inRecord.type !== 'in') {
+      return res.status(400).json({ message: 'El registro base no es de tipo entrada' });
+    }
+
+    const dayStart = new Date(inRecord.timestamp);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(inRecord.timestamp);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const existingOut = await Attendance.findOne({
+      user: inRecord.user,
+      type: 'out',
+      timestamp: { $gte: inRecord.timestamp, $lte: dayEnd }
+    });
+
+    if (existingOut) {
+      return res.status(400).json({ message: 'Ya existe un egreso para este usuario en el mismo día' });
+    }
+
+    const newRecord = await Attendance.create({
+      user: inRecord.user,
+      type: 'out',
+      timestamp: new Date(),
+      notes: notes || 'Salida registrada por administrador'
+    });
+
+    return res.status(201).json(newRecord);
+  } catch (err) {
+    return res.status(500).json({ message: 'Error al registrar salida', error: err.message });
+  }
+});
+
 module.exports = router;
