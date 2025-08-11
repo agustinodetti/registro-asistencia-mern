@@ -94,7 +94,14 @@ router.post('/admin/:inId/out', auth, isAdmin, async (req, res) => {
       notes: notes || 'Salida registrada por administrador'
     });
 
-    return res.status(201).json(newRecord);
+    // Devuelve el registro con el usuario populado para que el frontend pueda mostrar el nombre
+    const populated = await Attendance.findById(newRecord._id).populate({
+      path: 'user',
+      select: 'firstName lastName subRole',
+      populate: { path: 'subRole', select: 'description price' }
+    });
+
+    return res.status(201).json(populated);
   } catch (err) {
     return res.status(500).json({ message: 'Error al registrar salida', error: err.message });
   }
