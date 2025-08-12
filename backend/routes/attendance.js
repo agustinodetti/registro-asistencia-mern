@@ -58,6 +58,38 @@ router.delete('/:id', auth, isAdmin, async (req, res) => {
   }
 });
 
+// PUT /api/attendance/:id - Actualizar un registro de asistencia (solo admin)
+router.put('/:id', auth, isAdmin, async (req, res) => {
+  try {
+    const { notes, type, timestamp } = req.body || {};
+
+    const update = {};
+    if (typeof notes === 'string') update.notes = notes;
+    if (type && ['in', 'out'].includes(type)) update.type = type;
+    if (timestamp) update.timestamp = new Date(timestamp);
+
+    const updated = await Attendance.findByIdAndUpdate(
+      req.params.id,
+      update,
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Registro no encontrado' });
+    }
+
+    const populated = await Attendance.findById(updated._id).populate({
+      path: 'user',
+      select: 'firstName lastName subRole',
+      populate: { path: 'subRole', select: 'description price' }
+    });
+
+    return res.json(populated);
+  } catch (err) {
+    return res.status(500).json({ message: 'Error al actualizar el registro', error: err.message });
+  }
+});
+
 // POST /api/attendance/admin/:inId/out - Registrar salida basada en un registro de entrada (solo admin)
 router.post('/admin/:inId/out', auth, isAdmin, async (req, res) => {
   try {

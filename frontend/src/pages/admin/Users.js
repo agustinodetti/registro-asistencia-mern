@@ -262,7 +262,7 @@ const Users = () => {
               <FormControl fullWidth margin="normal">
                 <InputLabel>SubRol</InputLabel>
                 <Select
-                  value={currentUser?.subRole?._id || ''}
+                  value={currentUser?.subRole?._id || currentUser?.subRole || ''}
                   label="SubRol"
                   onChange={(e) => setCurrentUser({ ...currentUser, subRole: e.target.value })}
                 >

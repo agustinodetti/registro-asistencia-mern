@@ -82,9 +82,11 @@ router.put('/users/:id', auth, isAdmin, async (req, res) => {
     user.subRole = req.body.subRole || user.subRole;
     if (req.body.password) user.password = req.body.password;
 
-
     await user.save();
-    res.json(user);
+    
+    // Devuelve el usuario populado para consistencia con GET
+    const populatedUser = await User.findById(user._id).populate('subRole');
+    res.json(populatedUser);
   } catch (err) {
     res.status(500).json({ message: 'Error al actualizar usuario' });
   }
