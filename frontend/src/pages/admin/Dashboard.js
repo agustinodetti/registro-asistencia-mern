@@ -464,7 +464,7 @@ const AdminDashboard = () => {
                   <AttendanceIcon color="error" sx={{ fontSize: 40, mr: 2 }} />
                   <Box>
                     <Typography variant="h6">Ausentes Hoy</Typography>
-                    <Typography variant="h4">{(attendanceStats.totalUsers || 0)-(attendanceStats.presentToday || 0)-(attendanceStats.lateToday || 0)}</Typography>
+                    <Typography variant="h4">{(attendanceStats.totalUsers || 0)-(attendanceStats.presentToday || 0)}</Typography>
                   </Box>
                 </Box>
               </CardContent>
