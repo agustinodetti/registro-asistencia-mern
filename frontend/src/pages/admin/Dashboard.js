@@ -64,12 +64,16 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [openEditAttendance, setOpenEditAttendance] = useState(false);
+  const [attendanceToEdit, setAttendanceToEdit] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
   //const [startDate, setStartDate] = useState('');
   //const [endDate, setEndDate] = useState('');
   const [subRoles, setSubRoles] = useState([]);
   const [userFilter, setUserFilter] = useState('');
+  const [attendanceUserFilter, setAttendanceUserFilter] = useState('');
+  const [attendanceTypeFilter, setAttendanceTypeFilter] = useState('');
   //const [dateFilter, setDateFilter] = useState('');
 
   // Presetea los filtros de fecha con la fecha actual
@@ -213,6 +217,8 @@ const AdminDashboard = () => {
     
     if (from && recordDate < from) return false;
     if (to && recordDate > to) return false;
+    if (attendanceUserFilter && (record.user?._id || record.user) !== attendanceUserFilter) return false;
+    if (attendanceTypeFilter && record.type !== attendanceTypeFilter) return false;
     return true;
   });
 
@@ -280,6 +286,13 @@ const AdminDashboard = () => {
     const d = new Date(date);
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     return d.toISOString().slice(0, 10);
+  }
+
+  function getLocalDateTimeLocal(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
   }
 
   // Eliminar registro de asistencia
@@ -494,6 +507,33 @@ const AdminDashboard = () => {
               onChange={(e) => setEndDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
             />
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Usuario</InputLabel>
+              <Select
+                value={attendanceUserFilter}
+                label="Usuario"
+                onChange={(e) => setAttendanceUserFilter(e.target.value)}
+              >
+                <MenuItem value="">Todos</MenuItem>
+                {users.map((u) => (
+                  <MenuItem key={u._id} value={u._id}>
+                    {u.firstName} {u.lastName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel>Tipo</InputLabel>
+              <Select
+                value={attendanceTypeFilter}
+                label="Tipo"
+                onChange={(e) => setAttendanceTypeFilter(e.target.value)}
+              >
+                <MenuItem value="">Todos</MenuItem>
+                <MenuItem value="in">Entrada</MenuItem>
+                <MenuItem value="out">Salida</MenuItem>
+              </Select>
+            </FormControl>
             <Button variant="contained" color="success" onClick={exportToExcel}>
               Exportar a Excel
             </Button>
@@ -536,6 +576,15 @@ const AdminDashboard = () => {
                           Registrar salida
                         </Button>
                       )}
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        sx={{ mr: 1 }}
+                        onClick={() => { setAttendanceToEdit(record); setOpenEditAttendance(true); }}
+                      >
+                        Editar
+                      </Button>
                       <Button
                         color="error"
                         size="small"
@@ -712,6 +761,58 @@ const AdminDashboard = () => {
             <Button onClick={handleUserSubmit} variant="contained">
               Guardar
             </Button>
+          </DialogActions>
+        </Dialog>
+        {/* Diálogo editar registro de asistencia */}
+        <Dialog open={openEditAttendance} onClose={() => setOpenEditAttendance(false)}>
+          <DialogTitle>Editar registro de asistencia</DialogTitle>
+          <DialogContent>
+            <Box sx={{ minWidth: 400, pt: 1 }}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Tipo</InputLabel>
+                <Select
+                  value={attendanceToEdit?.type || ''}
+                  label="Tipo"
+                  onChange={(e) => setAttendanceToEdit({ ...attendanceToEdit, type: e.target.value })}
+                >
+                  <MenuItem value="in">Entrada</MenuItem>
+                  <MenuItem value="out">Salida</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                label="Notas"
+                margin="normal"
+                value={attendanceToEdit?.notes || ''}
+                onChange={(e) => setAttendanceToEdit({ ...attendanceToEdit, notes: e.target.value })}
+              />
+              <TextField
+                fullWidth
+                label="Fecha y hora"
+                type="datetime-local"
+                margin="normal"
+                value={attendanceToEdit ? getLocalDateTimeLocal(attendanceToEdit.timestamp || attendanceToEdit.createdAt) : ''}
+                onChange={(e) => setAttendanceToEdit({ ...attendanceToEdit, timestamp: new Date(e.target.value).toISOString() })}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenEditAttendance(false)}>Cancelar</Button>
+            <Button onClick={async () => {
+              try {
+                const token = localStorage.getItem('token');
+                const res = await axios.put(`${API_URL}/api/attendance/${attendanceToEdit._id}`,
+                  { type: attendanceToEdit.type, notes: attendanceToEdit.notes, timestamp: attendanceToEdit.timestamp },
+                  { headers: { 'x-auth-token': token } }
+                );
+                const updated = res.data;
+                setAttendanceRecords(prev => prev.map(r => r._id === updated._id ? updated : r));
+                setOpenEditAttendance(false);
+              } catch (err) {
+                setError(err.response?.data?.message || 'Error al actualizar registro');
+              }
+            }} variant="contained">Guardar</Button>
           </DialogActions>
         </Dialog>
       </Container>
