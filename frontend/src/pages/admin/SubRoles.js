@@ -46,7 +46,7 @@ const SubRoles = () => {
   const [subRoles, setSubRoles] = useState([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ description: '', price: '' });
+  const [form, setForm] = useState({ description: '', price: '', extraPrice: '' });
 const [loading, setLoading] = useState(false);
 const [searchTerm, setSearchTerm] = useState('');
 
@@ -73,14 +73,14 @@ const [searchTerm, setSearchTerm] = useState('');
 
   const handleOpen = (subRole = null) => {
     setEditing(subRole);
-    setForm(subRole ? { description: subRole.description, price: subRole.price } : { description: '', price: '' });
+    setForm(subRole ? { description: subRole.description, price: subRole.price, extraPrice: subRole.extraPrice } : { description: '', price: '', extraPrice: '' });
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
     setEditing(null);
-    setForm({ description: '', price: '' });
+    setForm({ description: '', price: '', extraPrice: '' });
   };
 
   const handleChange = (e) => {
@@ -174,6 +174,7 @@ const [searchTerm, setSearchTerm] = useState('');
                   <TableRow>
                     <TableCell>Descripción</TableCell>
                     <TableCell>Precio por hora</TableCell>
+                    <TableCell>Precio extra por hora</TableCell>
                     <TableCell>Acciones</TableCell>
                   </TableRow>
                 </TableHead>
@@ -182,6 +183,7 @@ const [searchTerm, setSearchTerm] = useState('');
                     <TableRow key={sr._id}>
                       <TableCell>{sr.description}</TableCell>
                       <TableCell>${sr.price}</TableCell>
+                      <TableCell>${sr.extraPrice}</TableCell>
                       <TableCell>
                         <Button
                           size="small"
@@ -221,6 +223,15 @@ const [searchTerm, setSearchTerm] = useState('');
                 name="price"
                 type="number"
                 value={form.price}
+                onChange={handleChange}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Precio extra por hora"
+                name="extraPrice"
+                type="number"
+                value={form.extraPrice}
                 onChange={handleChange}
                 fullWidth
                 margin="normal"

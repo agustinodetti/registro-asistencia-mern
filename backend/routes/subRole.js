@@ -6,8 +6,8 @@ const SubRole = require('../models/SubRole');
 // POST /api/subroles/ - Crear SubRole 
 router.post('/', auth, isAdmin, async (req, res) => {
   try {
-    const { description, price } = req.body;
-    const subRole = new SubRole({ description, price });
+    const { description, price, extraPrice } = req.body;
+    const subRole = new SubRole({ description, price, extraPrice });
     await subRole.save();
     res.status(201).json(subRole);
   } catch (err) {
@@ -39,10 +39,10 @@ router.get('/:id', auth, isAdmin, async (req, res) => {
 // PUT /api/subroles/:id - Actualizar un SubRole
 router.put('/:id', auth, isAdmin, async (req, res) => {
   try {
-    const { description, price } = req.body;
+    const { description, price, extraPrice } = req.body;
     const subRole = await SubRole.findByIdAndUpdate(
       req.params.id,
-      { description, price },
+      { description, price, extraPrice },
       { new: true }
     );
     if (!subRole) return res.status(404).json({ message: 'SubRole no encontrado' });

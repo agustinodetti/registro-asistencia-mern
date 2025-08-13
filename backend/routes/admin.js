@@ -125,7 +125,7 @@ router.get('/attendance', auth, isAdmin, async (req, res) => {
       .populate({
         path: 'user',
         select: 'firstName lastName subRole',
-        populate: { path: 'subRole', select: 'description price' }
+        populate: { path: 'subRole', select: 'description price extraPrice' }
       });
     res.json(records);
   } catch (err) {
