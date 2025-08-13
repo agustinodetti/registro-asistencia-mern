@@ -81,7 +81,7 @@ router.put('/:id', auth, isAdmin, async (req, res) => {
     const populated = await Attendance.findById(updated._id).populate({
       path: 'user',
       select: 'firstName lastName subRole',
-      populate: { path: 'subRole', select: 'description price' }
+      populate: { path: 'subRole', select: 'description price extraPrice' }
     });
 
     return res.json(populated);
@@ -130,7 +130,7 @@ router.post('/admin/:inId/out', auth, isAdmin, async (req, res) => {
     const populated = await Attendance.findById(newRecord._id).populate({
       path: 'user',
       select: 'firstName lastName subRole',
-      populate: { path: 'subRole', select: 'description price' }
+      populate: { path: 'subRole', select: 'description price extraPrice' }
     });
 
     return res.status(201).json(populated);

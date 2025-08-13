@@ -26,7 +26,8 @@ import {
   MenuItem,
   Select,
   InputLabel,
-  FormControl
+  FormControl,
+  Checkbox
 } from '@mui/material';
 import {
   People as UsersIcon,
@@ -35,7 +36,8 @@ import {
   Search as SearchIcon,
   BarChart as StatsIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  CheckBox as CheckBoxIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -81,6 +83,7 @@ const AdminDashboard = () => {
   const [endDate, setEndDate] = useState('');                                         // Puedes dejar vacío o también preseteado
   const [dateFilter, setDateFilter] = useState(getLocalDateString(new Date()));       // Para "Tiempos de Asistencia por Usuario"
   const [dateFilterTo, setDateFilterTo] = useState(getLocalDateString(new Date()));   // Fecha hasta
+  const [extraDaySelections, setExtraDaySelections] = useState({}); // Para manejar los checkboxes de día extra
 
 
   // Cargar datos al montar el componente
@@ -258,7 +261,10 @@ const AdminDashboard = () => {
         horas = diffMs / (1000 * 60 * 60);
       }
       const precio = item.user?.subRole?.price || 0;
-      const total = (horas * precio).toFixed(2);
+      const extraPrice = item.user?.subRole?.extraPrice || 0;
+      const isExtraDay = extraDaySelections[`${item.user?._id}-${item.fecha}`] || false;
+      const precioFinal = isExtraDay ? precio + extraPrice : precio;
+      const total = (horas * precioFinal).toFixed(2);
 
       return {
         Usuario: item.user
@@ -269,6 +275,8 @@ const AdminDashboard = () => {
         Egreso: item.out ? new Date(item.out).toLocaleTimeString() : '—',
         'Tiempo Total': item.tiempo,
         'Precio por hora': precio,
+        'Día Extra': isExtraDay ? 'Sí' : 'No',
+        'Precio Extra': extraPrice,
         Total: item.in && item.out ? total : '—'
       };
     });
@@ -651,6 +659,7 @@ const AdminDashboard = () => {
                   <TableCell>Egreso</TableCell>
                   <TableCell>Tiempo Total</TableCell>
                   <TableCell>Precio por hora</TableCell>
+                  <TableCell>Valor día extra</TableCell>
                   <TableCell>Total</TableCell>
                 </TableRow>
               </TableHead>
@@ -663,7 +672,11 @@ const AdminDashboard = () => {
                     horas = diffMs / (1000 * 60 * 60);
                   }
                   const precio = item.user?.subRole?.price || 0;
-                  const total = (horas * precio).toFixed(2);
+                  const extraPrice = item.user?.subRole?.extraPrice || 0;
+                  const itemKey = `${item.user?._id}-${item.fecha}`;
+                  const isExtraDay = extraDaySelections[itemKey] || false;
+                  const precioFinal = isExtraDay ? precio + extraPrice : precio;
+                  const total = (horas * precioFinal).toFixed(2);
 
                   return (
                     <TableRow key={idx}>
@@ -683,7 +696,31 @@ const AdminDashboard = () => {
                       {/* NUEVAS COLUMNAS */}
                       <TableCell>${precio}</TableCell>
                       <TableCell>
-                        {item.in && item.out ? `$${total}` : '—'}
+                        <Checkbox
+                          checked={isExtraDay}
+                          onChange={(e) => {
+                            setExtraDaySelections(prev => ({
+                              ...prev,
+                              [itemKey]: e.target.checked
+                            }));
+                          }}
+                          disabled={!item.in || !item.out}
+                        />
+                        {extraPrice > 0 && `$${extraPrice}`}
+                      </TableCell>
+                      <TableCell>
+                        {item.in && item.out ? (
+                          <Box>
+                            <Typography variant="body2">
+                              ${total}
+                            </Typography>
+                            {isExtraDay && (
+                              <Typography variant="caption" color="success.main">
+                                (Incluye extra: +${extraPrice}/h)
+                              </Typography>
+                            )}
+                          </Box>
+                        ) : '—'}
                       </TableCell>
                     </TableRow>
                   );
