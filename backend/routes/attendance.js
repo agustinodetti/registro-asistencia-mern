@@ -139,4 +139,49 @@ router.post('/admin/:inId/out', auth, isAdmin, async (req, res) => {
   }
 });
 
+// POST /api/attendance/admin/manual - Registrar asistencia manualmente (solo admin)
+router.post('/admin/manual', auth, isAdmin, async (req, res) => {
+  try {
+    const { userId, type, timestamp, notes } = req.body;
+
+    // Validaciones
+    if (!userId || !type || !timestamp) {
+      return res.status(400).json({ message: 'Faltan campos requeridos: userId, type, timestamp' });
+    }
+
+    if (!['in', 'out'].includes(type)) {
+      return res.status(400).json({ message: 'El tipo debe ser "in" o "out"' });
+    }
+
+    // Verificar que el usuario existe y es employee
+    const user = await require('../models/User').findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (user.role !== 'employee') {
+      return res.status(400).json({ message: 'Solo se puede registrar asistencia para empleados' });
+    }
+
+    // Crear el registro
+    const newRecord = await Attendance.create({
+      user: userId,
+      type,
+      timestamp: new Date(timestamp),
+      notes: notes || 'Registro manual por administrador'
+    });
+
+    // Devuelve el registro con el usuario populado
+    const populated = await Attendance.findById(newRecord._id).populate({
+      path: 'user',
+      select: 'firstName lastName subRole',
+      populate: { path: 'subRole', select: 'description price extraPrice' }
+    });
+
+    return res.status(201).json(populated);
+  } catch (err) {
+    return res.status(500).json({ message: 'Error al registrar asistencia manual', error: err.message });
+  }
+});
+
 module.exports = router;
