@@ -67,7 +67,14 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [openEditAttendance, setOpenEditAttendance] = useState(false);
+  const [openAddAttendance, setOpenAddAttendance] = useState(false);
   const [attendanceToEdit, setAttendanceToEdit] = useState(null);
+  const [newAttendance, setNewAttendance] = useState({
+    userId: '',
+    type: 'in',
+    timestamp: getLocalDateTimeLocal(new Date()),
+    notes: ''
+  });
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
   //const [startDate, setStartDate] = useState('');
@@ -337,6 +344,31 @@ const AdminDashboard = () => {
     }
   };
 
+  // Agregar registro de asistencia manualmente
+  const handleAddAttendance = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(
+        `${API_URL}/api/attendance/admin/manual`,
+        newAttendance,
+        { headers: { 'x-auth-token': token } }
+      );
+      const newRecord = res.data;
+
+      // Inserta el nuevo registro en la lista para que aparezca en la grilla sin recargar
+      setAttendanceRecords((prev) => [newRecord, ...prev]);
+      setOpenAddAttendance(false);
+      setNewAttendance({
+        userId: '',
+        type: 'in',
+        timestamp: getLocalDateTimeLocal(new Date()),
+        notes: ''
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al agregar registro de asistencia');
+    }
+  };
+
   // Calcular tiempos de asistencia por usuario y fecha
   function calcularTiempos(records) {
     // Agrupa por usuario y fecha
@@ -544,6 +576,14 @@ const AdminDashboard = () => {
             </FormControl>
             <Button variant="contained" color="success" onClick={exportToExcel}>
               Exportar a Excel
+            </Button>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={() => setOpenAddAttendance(true)}
+              startIcon={<AddIcon />}
+            >
+              Agregar asistencia
             </Button>
           </Box>
           <TableContainer>
@@ -850,6 +890,67 @@ const AdminDashboard = () => {
                 setError(err.response?.data?.message || 'Error al actualizar registro');
               }
             }} variant="contained">Guardar</Button>
+          </DialogActions>
+        </Dialog>
+        {/* Diálogo agregar registro de asistencia */}
+        <Dialog open={openAddAttendance} onClose={() => setOpenAddAttendance(false)}>
+          <DialogTitle>Agregar registro de asistencia</DialogTitle>
+          <DialogContent>
+            <Box sx={{ minWidth: 400, pt: 1 }}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Usuario</InputLabel>
+                <Select
+                  value={newAttendance.userId}
+                  label="Usuario"
+                  onChange={(e) => setNewAttendance({ ...newAttendance, userId: e.target.value })}
+                >
+                  {users.filter(u => u.role === 'employee').map((u) => (
+                    <MenuItem key={u._id} value={u._id}>
+                      {u.firstName} {u.lastName} - {u.email}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Tipo</InputLabel>
+                <Select
+                  value={newAttendance.type}
+                  label="Tipo"
+                  onChange={(e) => setNewAttendance({ ...newAttendance, type: e.target.value })}
+                >
+                  <MenuItem value="in">Entrada</MenuItem>
+                  <MenuItem value="out">Salida</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                label="Fecha y hora"
+                type="datetime-local"
+                margin="normal"
+                value={newAttendance.timestamp}
+                onChange={(e) => setNewAttendance({ ...newAttendance, timestamp: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                fullWidth
+                label="Notas"
+                margin="normal"
+                multiline
+                rows={3}
+                value={newAttendance.notes}
+                onChange={(e) => setNewAttendance({ ...newAttendance, notes: e.target.value })}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenAddAttendance(false)}>Cancelar</Button>
+            <Button 
+              onClick={handleAddAttendance} 
+              variant="contained"
+              disabled={!newAttendance.userId || !newAttendance.timestamp}
+            >
+              Agregar
+            </Button>
           </DialogActions>
         </Dialog>
       </Container>
