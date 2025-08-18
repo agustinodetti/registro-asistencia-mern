@@ -1,13 +1,69 @@
 const express = require('express');
 const { auth, isAdmin } = require('../middleware/auth');
 const Attendance = require('../models/Attendance');
+const User = require('../models/User');
+const Location = require('../models/Location');
+const { isWithinRadius, isValidCoordinates } = require('../utils/geolocation');
 const router = express.Router();
 
 // POST /api/attendance/register - Registrar ingreso/egreso
 router.post('/register', auth, async (req, res) => {
-  const { type, notes } = req.body; // type: 'in' o 'out'
+  const { type, notes, latitude, longitude } = req.body; // type: 'in' o 'out'
 
   try {
+    // Obtener configuración del usuario
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Verificar si el usuario requiere validación de ubicación
+    if (user.locationSettings?.requireLocationVerification) {
+      // Validar que se proporcionaron coordenadas
+      if (!latitude || !longitude) {
+        return res.status(400).json({ 
+          message: 'Se requieren coordenadas de ubicación para registrar asistencia' 
+        });
+      }
+
+      // Validar que las coordenadas son válidas
+      if (!isValidCoordinates(latitude, longitude)) {
+        return res.status(400).json({ 
+          message: 'Coordenadas de ubicación inválidas' 
+        });
+      }
+
+      // Obtener ubicación permitida
+      let allowedLocation;
+      if (user.locationSettings?.allowedLocation) {
+        allowedLocation = await Location.findById(user.locationSettings.allowedLocation);
+      } else {
+        // Si no tiene ubicación específica, usar la primera activa
+        allowedLocation = await Location.findOne({ isActive: true });
+      }
+
+      if (!allowedLocation) {
+        return res.status(400).json({ 
+          message: 'No hay ubicaciones permitidas configuradas' 
+        });
+      }
+
+      // Verificar si está dentro del radio permitido
+      const isWithin = isWithinRadius(
+        latitude, 
+        longitude, 
+        allowedLocation.latitude, 
+        allowedLocation.longitude, 
+        allowedLocation.radius
+      );
+
+      if (!isWithin) {
+        return res.status(400).json({ 
+          message: 'Ubicación actual fuera del radio habilitado. Por favor intente nuevamente en proximidad al local' 
+        });
+      }
+    }
+
     const lastRecord = await Attendance.findOne({ user: req.user.id }).sort({ timestamp: -1 });
     
     if (lastRecord && lastRecord.type === type) {
@@ -18,10 +74,24 @@ router.post('/register', auth, async (req, res) => {
       });
     }
 
+    // Obtener ubicación permitida para guardar en el registro
+    let allowedLocation = null;
+    if (user.locationSettings?.allowedLocation) {
+      allowedLocation = await Location.findById(user.locationSettings.allowedLocation);
+    } else {
+      allowedLocation = await Location.findOne({ isActive: true });
+    }
+
     const newRecord = new Attendance({
       user: req.user.id,
       type,
-      notes
+      notes,
+      userLocation: latitude && longitude ? { latitude, longitude } : undefined,
+      allowedLocation: allowedLocation ? {
+        latitude: allowedLocation.latitude,
+        longitude: allowedLocation.longitude,
+        radius: allowedLocation.radius
+      } : undefined
     });
 
     await newRecord.save();

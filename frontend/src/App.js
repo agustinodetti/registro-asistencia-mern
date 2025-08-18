@@ -6,6 +6,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import SubRoles from './pages/admin/SubRoles';
 import Users from './pages/admin/Users';
+import Locations from './pages/admin/Locations';
 import Profile from './pages/Profile';
 import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
@@ -25,6 +26,7 @@ function App() {
             <Route path="/employee/attendance" element={<Attendance />} />
             <Route path="/admin/subroles" element={<SubRoles />} />
             <Route path="/admin/users" element={<Users />} />
+            <Route path="/admin/locations" element={<Locations />} />
             <Route path="/profile" element={<Profile />} />
             {/* Puedes agregar más rutas aquí según sea necesario */}
           </Routes>

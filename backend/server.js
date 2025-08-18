@@ -4,6 +4,7 @@ const cors = require('cors');
 const cron = require('node-cron');
 const Attendance = require('./models/Attendance');
 const User = require('./models/User');
+const initDefaultLocation = require('./utils/initDefaultLocation');
 require('dotenv').config();
 
 const app = express();
@@ -33,11 +34,8 @@ app.use(cors({
 
 app.use(express.json());
 
+// Rutas básicas primero
 const attendanceRoutes = require('./routes/attendance');
-
-const startAutoOutJob = require('./utils/autoOutJob');
-startAutoOutJob();
-
 app.use('/api/attendance', attendanceRoutes);
 
 const authRoutes = require('./routes/auth');
@@ -52,10 +50,24 @@ app.use('/api/admin', adminRoutes);
 const subRoleRoutes = require('./routes/subRole');
 app.use('/api/subroles', subRoleRoutes);
 
+// Rutas de ubicación al final
+try {
+  const locationRoutes = require('./routes/location');
+  app.use('/api/locations', locationRoutes);
+  console.log('✅ Rutas de ubicación cargadas correctamente');
+} catch (error) {
+  console.error('❌ Error al cargar rutas de ubicación:', error);
+}
+
+const startAutoOutJob = require('./utils/autoOutJob');
+startAutoOutJob();
+
 // Conexión a MongoDB Atlas 
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('Conectado a MongoDB');
+    // Inicializar ubicación por defecto
+    await initDefaultLocation();
     // Inicia el proceso automático de salida
     require('./utils/autoOutJob')();
   })

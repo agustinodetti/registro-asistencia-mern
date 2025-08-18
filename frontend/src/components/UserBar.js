@@ -91,6 +91,19 @@ const UserBar = () => {
             >
               SubRoles
             </Button>
+            <Button
+              component={Link}
+              to="/admin/locations"
+              sx={{
+                color: theme.palette.terciary.main,
+                fontWeight: 500,
+                '&:hover': {
+                  color: theme.palette.terciary.light,
+                },
+              }}
+            >
+              Ubicaciones
+            </Button>
           </>
         )}
 

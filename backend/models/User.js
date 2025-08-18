@@ -7,7 +7,12 @@ const UserSchema = new mongoose.Schema({
   firstName: { type: String },
   lastName: { type: String },
   role: { type: String, enum: ['admin', 'employee'], default: 'employee' },
-  subRole: { type: mongoose.Schema.Types.ObjectId, ref: 'SubRole' }
+  subRole: { type: mongoose.Schema.Types.ObjectId, ref: 'SubRole' },
+  // Configuración de geolocalización
+  locationSettings: {
+    requireLocationVerification: { type: Boolean, default: true },
+    allowedLocation: { type: mongoose.Schema.Types.ObjectId, ref: 'Location' }
+  }
 });
 
 // Encriptar contraseña antes de guardar
