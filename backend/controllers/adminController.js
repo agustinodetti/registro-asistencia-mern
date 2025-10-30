@@ -10,14 +10,40 @@ exports.getUsers = async (req, res) => {
   }
 };
 
+
+
 exports.getStats = async (req, res) => {
-  try {
-    const stats = await Attendance.find().populate('user', 'firstName lastName');
-    res.json(stats);
-  } catch (err) {
-    res.status(500).json({ message: 'Error al obtener estadísticas' });
-  }
-};
+    try {
+      //const totalUsers = await User.countDocuments();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const cutoff = new Date(today);
+      cutoff.setHours(8, 0, 0, 0); // 08:00
+  
+      const stats = {
+        totalUsers: await User.countDocuments({ 
+          role: 'employee'
+        }),
+        presentToday: await Attendance.countDocuments({ 
+          type: 'in', 
+          timestamp: { $gte: today } 
+        }),
+        lateToday: await Attendance.countDocuments({
+          type: 'in',
+          timestamp: { 
+            $gte: cutoff,
+            $lt: tomorrow
+          }
+        })
+      };
+  
+      res.json(stats);
+    } catch (err) {
+      res.status(500).json({ message: 'Error al calcular estadísticas' });
+    }
+  };    
 
 exports.createUser = async (req, res) => {
   try {
