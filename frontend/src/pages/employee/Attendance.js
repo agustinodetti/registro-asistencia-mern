@@ -257,7 +257,7 @@ const Attendance = () => {
 
   // Formatear fecha
   const formatDate = (date) => {
-    return format(new Date(date), "PPPpp", { locale: es });
+    return format(new Date(date), "HH:mm", { locale: es });
   };
 
   // Obtener color del indicador de ubicación

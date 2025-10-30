@@ -247,7 +247,7 @@ const AdminDashboard = () => {
         : 'Sin usuario',
       Tipo: record.type,
       Notas: record.notes,
-      Fecha: new Date(record.timestamp || record.createdAt).toLocaleString(),
+      Fecha: new Date(record.timestamp || record.createdAt).toLocaleString('es-AR', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -278,8 +278,8 @@ const AdminDashboard = () => {
           ? `${item.user.firstName || ''} ${item.user.lastName || ''}`.trim() || 'Sin nombre'
           : 'Sin usuario',
         Fecha: item.fecha,
-        Ingreso: item.in ? new Date(item.in).toLocaleTimeString() : '—',
-        Egreso: item.out ? new Date(item.out).toLocaleTimeString() : '—',
+        Ingreso: item.in ? new Date(item.in).toLocaleTimeString('es-AR', { hour12: false, hour: '2-digit', minute: '2-digit' }) : '—',
+        Egreso: item.out ? new Date(item.out).toLocaleTimeString('es-AR', { hour12: false, hour: '2-digit', minute: '2-digit' }) : '—',
         'Tiempo Total': item.tiempo,
         'Precio por hora': precio,
         'Día Extra': isExtraDay ? 'Sí' : 'No',
@@ -415,7 +415,8 @@ const AdminDashboard = () => {
       if (!agrupados[key]) {
         agrupados[key] = {
           user: rec.user,
-          fecha: fechaClave,
+          fecha: fechaClave, // Esto queda para agrupación (YYYY-MM-DD)
+          fechaCompleta: rec.timestamp || rec.createdAt, // guardo fecha/hora disponible
           in: null,
           out: null
         };
@@ -608,9 +609,7 @@ const AdminDashboard = () => {
                     <TableCell>{record.type}</TableCell>
                     <TableCell>{record.notes}</TableCell>
                     <TableCell>
-                      {record.timestamp
-                        ? new Date(record.timestamp).toLocaleString()
-                        : (record.createdAt ? new Date(record.createdAt).toLocaleString() : 'Sin fecha')}
+                      {record.timestamp ? new Date(record.timestamp).toLocaleString('es-AR', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : (record.createdAt ? new Date(record.createdAt).toLocaleString('es-AR', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Sin fecha')}
                     </TableCell>
                     <TableCell>
                       {record.type === 'in' && (
@@ -725,12 +724,12 @@ const AdminDashboard = () => {
                           ? `${item.user.firstName || ''} ${item.user.lastName || ''}`.trim() || 'Sin nombre'
                           : 'Sin usuario'}
                       </TableCell>
-                      <TableCell>{item.fecha}</TableCell>
+                      <TableCell>{item.in ? format(new Date(item.in), 'yyyy-MM-dd', { locale: es }) : (item.out ? format(new Date(item.out), 'yyyy-MM-dd', { locale: es }) : '')}</TableCell>
                       <TableCell>
-                        {item.in ? new Date(item.in).toLocaleTimeString() : '—'}
+                        {item.in ? new Date(item.in).toLocaleTimeString('es-AR', { hour12: false, hour: '2-digit', minute: '2-digit' }) : '—'}
                       </TableCell>
                       <TableCell>
-                        {item.out ? new Date(item.out).toLocaleTimeString() : '—'}
+                        {item.out ? new Date(item.out).toLocaleTimeString('es-AR', { hour12: false, hour: '2-digit', minute: '2-digit' }) : '—'}
                       </TableCell>
                       <TableCell>{item.tiempo}</TableCell>
                       {/* NUEVAS COLUMNAS */}
